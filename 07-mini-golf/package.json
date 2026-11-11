@@ -1,0 +1,28 @@
+{
+  "name": "pocket-links",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pocket Links: nine holes of mini golf in the browser, on a deterministic physics engine.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "solve": "vite-node scripts/solve.ts",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

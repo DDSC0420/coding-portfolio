@@ -1,0 +1,45 @@
+name: mini-golf
+
+on:
+  push:
+    paths: ["07-mini-golf/**", ".github/workflows/mini-golf.yml"]
+  pull_request:
+    paths: ["07-mini-golf/**", ".github/workflows/mini-golf.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 07-mini-golf
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: 07-mini-golf/package-lock.json
+      - run: npm ci
+      - name: Type check (strict TypeScript)
+        run: npm run typecheck
+      - name: Unit tests (physics, rules, every hole's known solution replayed)
+        run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Browser tests (the production build, played with keyboard and mouse)
+        run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pocket-links-build
+          path: 07-mini-golf/dist/
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: 07-mini-golf/test-results/
+          if-no-files-found: ignore
