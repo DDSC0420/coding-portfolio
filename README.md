@@ -11,8 +11,8 @@ Built with heavy AI assistance (Claude). I set the brief, review the design and 
 | 03 | [Intake: CV to structured record](03-intake/) | AI extraction, validation | Done |
 | 04 | [plandrift: Terraform drift report](04-terraform-drift/) | Packaging, releases, CI | Done |
 | 05 | [Tally: subscription SaaS starter](05-saas-starter/) | Full-stack, auth, payments | Done |
-| 06 | Chrome extension | Browser platform | Planned |
-| 07 | Browser physics game | Graphics, game loop | Planned |
+| 06 | [Margin: highlights that stay put](06-chrome-extension/) | Browser platform, Chrome extensions | Done |
+| 07 | [Pocket Links: mini golf](07-mini-golf/) | Graphics, game loop, physics | Done |
 | 08 | RELAY workflow engine | Distributed systems | Planned |
 
 ## What "finished" means here
