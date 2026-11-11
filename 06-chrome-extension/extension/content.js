@@ -241,6 +241,11 @@
       return { ok: true, result: state() };
     },
     'scroll-to': (msg) => scrollTo(msg.id),
+    // Pushed by the service worker when this page's highlights change elsewhere (popup, library, another tab).
+    highlights: (msg) => {
+      if (msg.key === pageKey && Array.isArray(msg.highlights)) render(msg.highlights);
+      return { ok: true };
+    },
   };
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -249,13 +254,6 @@
     if (!handler) return false;
     Promise.resolve(handler(msg)).then(sendResponse, (err) => sendResponse({ ok: false, error: String(err) }));
     return true;
-  });
-
-  // Highlights deleted or added elsewhere (popup, library, another tab) show up here at once.
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local' || !pageKey) return;
-    const change = changes[`page:${pageKey}`];
-    if (change) render(change.newValue?.highlights ?? []);
   });
 
   const ready = refresh();

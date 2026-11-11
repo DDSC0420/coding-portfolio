@@ -4,7 +4,8 @@
 // Messages are checked by who sent them. A content script (running on a web page) may only ask
 // for its own page's highlights, save to its own page, and report its count; the page's address
 // comes from Chrome (sender.url), never from the message. Only Margin's own pages (popup,
-// library) may delete. Web pages themselves can't message the extension at all.
+// library) may delete. Content scripts can't open storage at all, and web pages can't message
+// the extension.
 
 import { urlKey } from './lib/urlkey.js';
 import { createStore } from './lib/store.js';
@@ -15,6 +16,9 @@ const SCRIPT_ID = 'margin-remembered-sites';
 const CONTENT_JS = ['lib/anchor.js', 'content.js'];
 const CONTENT_CSS = ['content.css'];
 const EXTENSION_ORIGIN = chrome.runtime.getURL('');
+
+// Storage is for Margin's own pages and this worker only; a content script asking gets refused.
+chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
 
 // ---- remembered sites: run the content script automatically only where the person said so ----
 
@@ -56,7 +60,8 @@ async function hasContentScript(tabId) {
 /** Put the content script on a tab (no-op if it's there). Throws on pages extensions can't touch. */
 async function ensureContentScript(tabId) {
   if (await hasContentScript(tabId)) return;
-  await chrome.scripting.insertCSS({ target: { tabId }, files: CONTENT_CSS, origin: 'USER' });
+  // Default (author) origin on purpose: Chrome ignores ::highlight() rules in a USER-origin sheet.
+  await chrome.scripting.insertCSS({ target: { tabId }, files: CONTENT_CSS });
   await chrome.scripting.executeScript({ target: { tabId }, files: CONTENT_JS });
 }
 
@@ -76,6 +81,32 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'save-highlight') saveSelection(tab);
+});
+
+// ---- keeping open pages up to date ----
+// Which page each tab is showing (tab:<id> → page key, in session storage), so a highlight saved
+// or deleted elsewhere is pushed to the tabs that show that page and nowhere else.
+
+function rememberTab(tabId, key) {
+  return chrome.storage.session.set({ [`tab:${tabId}`]: key });
+}
+
+chrome.tabs.onRemoved.addListener((tabId) => chrome.storage.session.remove(`tab:${tabId}`));
+
+chrome.storage.onChanged.addListener(async (changes, area) => {
+  if (area !== 'local') return;
+  const changed = Object.keys(changes).filter((k) => k.startsWith('page:'));
+  if (!changed.length) return;
+  const tabs = await chrome.storage.session.get(null);
+  for (const storageKey of changed) {
+    const key = storageKey.slice('page:'.length);
+    const highlights = changes[storageKey].newValue?.highlights ?? [];
+    for (const [entry, tabKey] of Object.entries(tabs)) {
+      if (!entry.startsWith('tab:') || tabKey !== key) continue;
+      const tabId = Number(entry.slice(4));
+      chrome.tabs.sendMessage(tabId, { type: 'highlights', key, highlights }, { frameId: 0 }).catch(() => {});
+    }
+  }
 });
 
 // ---- badge ----
@@ -127,6 +158,7 @@ async function handle(msg, sender) {
   if (!key) throw new Error('not a web page');
   switch (msg.type) {
     case 'page-ready': {
+      await rememberTab(sender.tab.id, key);
       const page = await store.getPage(key);
       return { key, highlights: page?.highlights ?? [] };
     }

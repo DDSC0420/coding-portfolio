@@ -77,6 +77,8 @@ step('saves the selection with the real keyboard shortcut, even across links and
   await until(async () => (await savedOnArticle()).length === 3, { message: 'third highlight' });
   assert.deepEqual(await until(async () => ((await b.painted()).length === 3 ? b.painted() : null)), sorted(RULE, WICK, NOON));
   assert.equal(await b.badge(), '3');
+  // Registered is not the same as visible: check the screen really shows yellow behind each one.
+  for (const share of await b.paintedPixels()) assert.ok(share > 0.4, `highlight not visibly painted (${share.toFixed(2)} yellow)`);
 });
 
 step('the page itself never sees Margin: nothing added to its DOM, no way to message it', async () => {
@@ -117,6 +119,7 @@ step('opening the popup (Alt+Shift+M) shows this page’s highlights, in page or
     { text: NOON, status: 'On this page' },
   ]);
   assert.deepEqual(await b.painted(), sorted(RULE, WICK, NOON));
+  for (const share of await b.paintedPixels()) assert.ok(share > 0.4, `highlight not visibly painted (${share.toFixed(2)} yellow)`);
   await popup.close();
 });
 
@@ -144,6 +147,7 @@ step('allowing it: the highlights come back on their own after a reload, on that
   await page.reload();
   assert.deepEqual(await until(async () => ((await b.painted())?.length === 3 ? b.painted() : null)), sorted(RULE, WICK, NOON));
   assert.equal(await b.badge(), '3');
+  for (const share of await b.paintedPixels()) assert.ok(share > 0.4, `highlight not visibly painted (${share.toFixed(2)} yellow)`);
 
   // Another site (localhost is a different origin) is still untouched.
   await page.goto(server.url('/article', 'localhost'));
@@ -250,7 +254,7 @@ step('the library lists everything, searches it, and exports Markdown', async ()
   await library.close();
 });
 
-step('a content script cannot delete highlights or save them under another page', async () => {
+step('a content script cannot read storage, delete highlights, or save them under another page', async () => {
   await page.bringToFront();
   const [first] = await savedOnArticle();
   const replies = await b.sw(async ({ key, id }) => {
@@ -260,6 +264,7 @@ step('a content script cannot delete highlights or save them under another page'
       target: { tabId: tab.id },
       args: [key, id],
       func: async (k, i) => ({
+        storage: await chrome.storage.local.get(null).then(() => 'read', (e) => e.message),
         del: await chrome.runtime.sendMessage({ type: 'delete', key: k, id: i }),
         save: await chrome.runtime.sendMessage({
           type: 'save',
@@ -270,6 +275,7 @@ step('a content script cannot delete highlights or save them under another page'
     });
     return result;
   }, { key: article(), id: first.id });
+  assert.equal(replies.storage, 'Access to storage is not allowed from this context.');
   assert.deepEqual(replies.del, { ok: false, error: 'not allowed' });
   assert.equal(replies.save.ok, true);
   assert.equal(replies.save.result.key, article(), 'saved under the page it came from, whatever the message said');

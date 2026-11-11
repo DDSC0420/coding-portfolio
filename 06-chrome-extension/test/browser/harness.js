@@ -14,6 +14,7 @@ import http from 'node:http';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { inflateSync } from 'node:zlib';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -103,12 +104,12 @@ export async function press(...keys) {
 
 // ---- the browser ----
 
-export async function launch() {
+export async function launch({ width = 1280, height = 900 } = {}) {
   const profile = mkdtempSync(join(tmpdir(), 'margin-profile-'));
   const options = {
     headless: false,
     viewport: null,
-    args: [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`, '--window-size=1280,900', '--window-position=0,0'],
+    args: [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`, `--window-size=${width},${height}`, '--window-position=0,0'],
   };
   if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   else if (process.env.PLAYWRIGHT_CHANNEL) options.channel = process.env.PLAYWRIGHT_CHANNEL;
@@ -147,6 +148,33 @@ export async function launch() {
         if (!h) return null;
         return [...h].map((r) => r.toString().replace(/\s+/g, ' ').trim()).sort();
       }),
+
+    /**
+     * Share of the pixels behind each painted highlight that are actually highlighter-yellow,
+     * read from a real screenshot. Catches a highlight that is registered but not drawn.
+     */
+    async paintedPixels(target = page) {
+      const rects = await target.evaluate(() =>
+        [...(CSS.highlights.get('margin') ?? [])].map((r) => {
+          const b = r.getClientRects()[0];
+          return { x: b.x, y: b.y, width: b.width, height: b.height, text: r.toString() };
+        }),
+      );
+      const out = [];
+      for (const rect of rects) {
+        const png = await target.screenshot({ clip: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } });
+        const { width, height, pixel } = decodePng(png);
+        let yellow = 0;
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const [r, g, b] = pixel(x, y);
+            if (r > 220 && g > 190 && b < 170) yellow++;
+          }
+        }
+        out.push(yellow / (width * height));
+      }
+      return out;
+    },
 
     /** Open the real toolbar popup with its keyboard shortcut, and get a handle on it. */
     async openPopup() {
@@ -217,6 +245,54 @@ export async function launch() {
     },
   };
   return browser;
+}
+
+/** Minimal PNG reader for 8-bit RGB/RGBA screenshots (what Chrome produces). Test use only. */
+export function decodePng(buf) {
+  let pos = 8;
+  let width = 0;
+  let height = 0;
+  let channels = 0;
+  const idat = [];
+  while (pos < buf.length) {
+    const len = buf.readUInt32BE(pos);
+    const type = buf.toString('ascii', pos + 4, pos + 8);
+    const data = buf.subarray(pos + 8, pos + 8 + len);
+    if (type === 'IHDR') {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      if (data[8] !== 8 || data[12] !== 0) throw new Error('only 8-bit, non-interlaced PNGs');
+      channels = { 2: 3, 6: 4 }[data[9]];
+      if (!channels) throw new Error(`unsupported PNG colour type ${data[9]}`);
+    } else if (type === 'IDAT') idat.push(data);
+    pos += 12 + len;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  const px = Buffer.alloc(height * stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    for (let i = 0; i < stride; i++) {
+      const x = raw[y * (stride + 1) + 1 + i];
+      const a = i >= channels ? px[y * stride + i - channels] : 0;
+      const b = y > 0 ? px[(y - 1) * stride + i] : 0;
+      const c = y > 0 && i >= channels ? px[(y - 1) * stride + i - channels] : 0;
+      let v;
+      if (filter === 0) v = x;
+      else if (filter === 1) v = x + a;
+      else if (filter === 2) v = x + b;
+      else if (filter === 3) v = x + ((a + b) >> 1);
+      else {
+        const p = a + b - c;
+        const pa = Math.abs(p - a);
+        const pb = Math.abs(p - b);
+        const pc = Math.abs(p - c);
+        v = x + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c);
+      }
+      px[y * stride + i] = v & 255;
+    }
+  }
+  return { width, height, pixel: (x, y) => [...px.subarray((y * width + x) * channels, (y * width + x) * channels + 3)] };
 }
 
 /** Select the n-th occurrence of some text on the page, across element boundaries, like dragging the mouse. */
