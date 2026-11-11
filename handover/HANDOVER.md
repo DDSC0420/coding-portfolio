@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-11, end of session 2.
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-11, session 3 (project 04 done).
 
 ## Goal
 
@@ -24,8 +24,8 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 | 01 | Live incident board | Real-time, WebSockets | **Done.** 49 tests, CI green |
 | 02 | UK grid data pipeline | Data engineering, SQL | **Done.** 60 tests, CI green, live API run verified in CI |
 | 03 | Intake: CV to structured record | AI extraction, validation | **Done.** 126 tests, CI green, scorecard 44/44 |
-| 04 | Terraform drift CLI | Packaging, releases | **NEXT** |
-| 05 | Subscription SaaS starter | Full-stack, auth, payments | Planned |
+| 04 | plandrift: Terraform drift CLI | Packaging, releases | **Done.** 178 tests, all 20 CI jobs green (12-cell OS × Python wheel matrix, real Terraform 1.9.8 / 1.17.1 / OpenTofu e2e, Action on 3 OSes). First release waits on Kyran's click (open items) |
+| 05 | Subscription SaaS starter | Full-stack, auth, payments | **NEXT** (plan below) |
 | 06 | Chrome extension | Browser platform | Planned |
 | 07 | Browser physics game | Graphics | Planned |
 | 08 | RELAY workflow engine, finished | Distributed systems | Planned (capstone; an existing separate project of Kyran's, so ask him where its code lives) |
@@ -34,31 +34,43 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 - `01-live-incident-board/`: FastAPI + WebSockets, vanilla JS frontend. Rules in `app/rooms.py`, web layer in `app/main.py`. Tests in three layers including two real browser tabs (Playwright).
 - `02-uk-grid-pipeline/`: `python -m gridwatch run [--sample]`. Extract (stdlib urllib, windowed, retried) → load (DuckDB, idempotent upserts) → numbered SQL models in `sql/` → six quality checks → self-contained HTML report. `sample/` is a real API snapshot. The workflow has a manual `live` job that runs against the real API and can refresh the sample.
-- `03-intake/`: `python -m intake serve|extract|eval`. `readers.py` (type by magic bytes; PDF via pypdf, DOCX incl. page header, list bullets, tables) → `rules.py` (default, no key) or `llm.py` (optional, `INTAKE_LLM=anthropic|groq`, stdlib HTTP) → both return a `Draft` of quoted strings → `validate.py` grounds every value in the CV text (else `rejected`), parses dates/phones/years in code, flags doubtful values `needs_review` with a reason. `schema.py` refuses a value with no evidence. FastAPI page with evidence highlighting. Four invented samples (example.com emails, Ofcom 07700 900xxx numbers) with hand-labelled answers in `samples/expected/`; `scripts/build_samples.py` makes the PDF and DOCX.
+- `03-intake/`: `python -m intake serve|extract|eval`. `readers.py` (type by magic bytes; PDF via pypdf, DOCX incl. page header, list bullets, tables) → `rules.py` (default, no key) or `llm.py` (optional, `INTAKE_LLM=anthropic|groq`, stdlib HTTP) → both return a `Draft` of quoted strings → `validate.py` grounds every value in the CV text (else `rejected`), parses dates/phones/years in code, flags doubtful values `needs_review` with a reason. `schema.py` refuses a value with no evidence. FastAPI page with evidence highlighting. Four invented samples with hand-labelled answers in `samples/expected/`.
+- `04-terraform-drift/`: package `plandrift` (the name `tfdrift` is taken on PyPI), src layout, hatchling, zero runtime deps, Python 3.10+. `plandrift check PLAN_JSON|-` and `plandrift run [--full-plan] [-- plan args]`; formats table/markdown/json; exit 0/2/1 (argparse usage errors forced to 1); `--fail-on any|drift|never`; `--ignore ADDRESS[:ATTR]` with a bracket-safe glob. Modules: `plan.py` (actions → one word, refuses state JSON / binary plans / errored plans) → `diff.py` (leaf-level diffs, applies sensitive and unknown marks so secrets never leave it) → `report.py` (ignore rules, exit code) → `render.py`. `examples/` has three hand-written AWS-scenario plans (a planted secret `DO-NOT-PRINT` that tests prove never prints) and `examples/real/` with real Terraform 1.17.1 plans committed by CI. `e2e/` applies local + random + Consul (CI service container) resources, tampers with them, and checks the report. `action.yml` is a composite GitHub Action (installs from its own folder into a venv). Workflows: `terraform-drift.yml` (test, build + twine + sdist + git-URL install, smoke ×12, e2e ×3, action ×3, manual `snapshot`) and `terraform-drift-release.yml` (tag `drift-v*` or Run workflow → checks version/changelog/not-already-released → tests → build → `gh release create` → install from the release URL on 3 OSes). `scripts/screenshot.py` makes `docs/terminal.png` from real coloured output.
 
 ## Patterns that worked (reuse them)
 
 - Keep rules in a pure module with no framework imports, and test it directly.
 - Playwright browser tests, skipped automatically when Playwright isn't installed; locally run with `PLAYWRIGHT_CHANNEL=chrome`.
-- The build sandbox can't reach most external sites. To exercise anything that needs the internet, add a `workflow_dispatch` job and trigger it with `gh api -X POST repos/DDSC0420/coding-portfolio/actions/workflows/<file>/dispatches -f ref=main`.
-- Look at the result in a browser (screenshot) before calling UI work done; save the screenshot to `docs/`. A small Playwright script with the sandbox's `/usr/bin/google-chrome` (channel "chrome") works; quantise PNGs with Pillow (256 colours) to keep them around 120 KB.
-- Hand-labelled expected answers plus an `eval` command that CI runs (03). Write the answers from the input, never by dumping the tool's output.
-- Ground anything an extractor or model returns against its source, and do interpretation (dates, numbers, totals) in code (03).
+- The build sandbox can't reach most external sites (e.g. releases.hashicorp.com is blocked; PyPI and GitHub work). To exercise anything that needs the internet or a real tool, do it in a CI job. A `workflow_dispatch` input like `snapshot=true` can commit real outputs back as fixtures (02, 04); `git pull --rebase` afterwards. Trigger with `gh api -X POST repos/DDSC0420/coding-portfolio/actions/workflows/<file>/dispatches -f ref=main -f 'inputs[snapshot]=true'`.
+- Look at the result in a browser (screenshot) before calling UI work done; save it to `docs/`. A small Playwright script with the sandbox's `/usr/bin/google-chrome` (channel "chrome") works; quantise PNGs with Pillow (256 colours). For a CLI, render the real ANSI output into a terminal-styled HTML page (04's `scripts/screenshot.py`) and screenshot the window element, not the body.
+- Hand-labelled expected answers written from the scenario, never by dumping the tool's output (03, 04's `test_examples.py`, `test_real_plans.py`, `e2e/check_report.py`).
+- Ground anything an extractor or model returns against its source, and do interpretation in code (03).
+- Plant a known secret in fixtures and assert it never appears in any output (04).
+- GitHub Actions gotchas met in 04: a job-level `defaults.run` replaces the workflow's whole `defaults.run`, shell included (Windows then falls back to PowerShell). On Windows runners use `python`, not `python3`; strip `\r` from command output (`tr -d '\r'`); never write `$GITHUB_OUTPUT` lines from Python print. `hashicorp/setup-terraform` needs `terraform_wrapper: false` or it mangles `terraform show -json`. `! cmd` never trips `set -e`.
+- **This session's git proxy refuses tag pushes (HTTP 403, a policy denial: don't retry or route around it).** Branch pushes to `main` work. So releases get a `workflow_dispatch` path that Kyran starts.
+- WebFetch of docs pages may need Kyran's approval (unattended it fails); WebSearch works.
 - Sandbox: Python 3.13, make a venv per project under `/home/claude/` (not in the repo). The `gh` CLI works for REST (`gh api`).
 
 ## Open items for Kyran (none block the next build)
 
+- **Cut the first plandrift release:** GitHub → Actions → terraform-drift-release → Run workflow (branch main). It tags `drift-v0.1.0`, attaches the wheel and sdist to a Release, and installs it back on Linux/macOS/Windows; check all four jobs go green. (I couldn't push the tag: the session's proxy blocks tag pushes.) After that the README's Releases link has something in it, and `POST.md`'s release line is true.
+- Post 04 with `04-terraform-drift/docs/terminal.png`. Draft: `04-terraform-drift/POST.md`. Optional second image: an e2e job's Summary page on GitHub, which shows the Markdown (PR-comment) report.
+- **Pick a licence for the repo** (none yet, so legally nobody may reuse the code). MIT is the usual choice for a portfolio; it matters most for 04, which is offered as a tool and a GitHub Action. Add `LICENSE` at the root and `license = "MIT"` in `04-terraform-drift/pyproject.toml`.
+- PyPI for plandrift: only if you want it. Needs your PyPI account; Trusted Publishing from the release workflow would be the way. The name `plandrift` was free on 2026-11-11.
+- Chore, not urgent: GitHub warns that `actions/checkout@v4` and `actions/setup-python@v5` target Node 20 (they still run). Bumping to the Node 24 majors across all workflows clears it.
 - Record a short demo for 01 (two windows side by side, press "Run drill") and post it. Draft: `01-live-incident-board/POST.md`.
 - Post 02 with `02-uk-grid-pipeline/docs/report.png`. Draft: `02-uk-grid-pipeline/POST.md`.
-- Post 03 with `03-intake/docs/review.png` (or record Rowan's sample: click a review item, watch it light up). Draft: `03-intake/POST.md`; it has an optional line mentioning the agency product, your call.
-- 03's LLM mode has only been tested against a fake API. Worth one local run with your own key: `INTAKE_LLM=anthropic ANTHROPIC_API_KEY=... python -m intake eval`. If the default model name (`claude-haiku-5-5`, Groq `llama-3.3-70b-versatile`) is retired, set `INTAKE_LLM_MODEL`.
+- Post 03 with `03-intake/docs/review.png`. Draft: `03-intake/POST.md`; it has an optional line mentioning the agency product, your call.
+- 03's LLM mode has only been tested against a fake API. Worth one local run with your own key: `INTAKE_LLM=anthropic ANTHROPIC_API_KEY=... python -m intake eval`. If the default model name is retired, set `INTAKE_LLM_MODEL`.
 
 ## Start of next session
 
-Build project 04, **Terraform drift CLI**, to "done". Skill on show: packaging and releases (a real installable tool), using Kyran's Terraform background.
+Build project 05, **Subscription SaaS starter**, to "done", in `05-saas-starter/`. Skill on show: full-stack product engineering, auth and payments done properly. Local only, no keys: payments go through a built-in fake that behaves like Stripe.
 
-- What it does: reads Terraform plan JSON (`terraform show -json plan.out`) and reports drift: resources changed outside Terraform (`resource_drift`) and pending changes (`resource_changes`), as a table, JSON or Markdown (for a PR comment). Exit codes for CI: 0 no drift, 2 drift, 1 error. Must work with **no cloud credentials and no Terraform installed** on bundled plan JSON fixtures. An optional mode can run `terraform plan -refresh-only` itself.
-- Real path, still free: a CI job installs Terraform (`hashicorp/setup-terraform`), applies a tiny config using only the `local` and `random` providers, changes the file outside Terraform, then runs the CLI on a real refresh-only plan and asserts it reports the drift. Use real plan JSON from that job to refresh the fixtures (same idea as 02's `live` job).
-- Packaging: `pyproject.toml` with a console entry point, `--version`, CHANGELOG, built wheel and sdist in CI, installed from the wheel into a clean venv and smoke-tested on an OS and Python matrix (ubuntu/macos/windows, 3.10 to 3.13). A tag `drift-vX.Y.Z` triggers a release workflow that attaches the wheel and sdist to a GitHub Release (free). Optionally a composite GitHub Action wrapper so other repos can use it.
-- Don't publish to PyPI without asking Kyran (needs his account; Trusted Publishing would be the way). Note it in open items.
-- Then update this file and carry straight on to 05.
+- **Stack:** FastAPI, SQLite (stdlib `sqlite3`, numbered SQL migrations), Jinja2 server-rendered pages, a little vanilla JS. `python -m saas serve --open` and a seeded demo.
+- **Auth:** email + password hashed with stdlib `hashlib.scrypt`; signed, HttpOnly, SameSite=Lax session cookie (Secure when not on localhost); CSRF token on every form; login rate limit; password reset by emailed link, where "email" is a dev outbox page (`/dev/outbox`), no SMTP.
+- **Billing:** a provider interface. Default `fake` provider: a local checkout page that looks like hosted checkout, then sends webhooks signed exactly like Stripe's (`Stripe-Signature: t=…,v1=HMAC-SHA256(t.payload)`) to the app's own webhook endpoint. Optional real Stripe test mode via `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` (stdlib HTTP, like 03's `llm.py`), tested against recorded payloads only; say so in Honest scope.
+- **Subscription rules in a pure module:** states trialing → active → past_due → canceled (plus cancel at period end and resume); webhook idempotency (processed event ids), out-of-order events (ignore older than current), signature tolerance window (5 min), unknown event types ignored. Plans Free / Pro / Team with entitlements (feature flags, Team seat limit) checked server-side.
+- **Pages:** pricing, sign up, log in, dashboard with a Pro-only feature, billing (current plan, upgrade, cancel, resume), and a dev panel: advance the clock to renewal, simulate a failed payment, replay a webhook (shows idempotency).
+- **Tests:** pure state machine and entitlements; signature verification (good, wrong secret, outside tolerance, tampered body); idempotent and out-of-order webhooks; auth (hash, session tamper, CSRF missing/wrong, rate limit, reset token single-use and expiry); API with TestClient; Playwright: sign up → upgrade via fake checkout → Pro feature unlocks → failed payment → past_due banner → cancel → back to Free at period end.
+- **Screenshot** of the billing page with the dev panel; `POST.md`. Then update this file and the root README, and carry on to 06.
