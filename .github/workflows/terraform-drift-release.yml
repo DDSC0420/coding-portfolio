@@ -1,0 +1,72 @@
+name: terraform-drift-release
+
+# Push a tag like drift-v0.1.0 to publish a GitHub Release with the wheel and sdist attached.
+# (No PyPI: that needs the owner's PyPI account. Trusted Publishing would be the way.)
+on:
+  push:
+    tags: ["drift-v*"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 04-terraform-drift
+    shell: bash
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The tag must match the package version and have a changelog entry
+        run: |
+          tag="${GITHUB_REF_NAME#drift-v}"
+          version="$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' src/plandrift/__init__.py)"
+          test "$tag" = "$version" || { echo "tag $GITHUB_REF_NAME doesn't match version $version"; exit 1; }
+          grep -q "^## $version " CHANGELOG.md || { echo "CHANGELOG.md has no entry for $version"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - run: pip install -r requirements-dev.txt -e .
+      - run: pytest
+      - run: python -m build && twine check --strict dist/*
+      - name: Smoke test the built wheel
+        run: |
+          python -m venv /tmp/v && /tmp/v/bin/pip install dist/*.whl
+          test "$(/tmp/v/bin/plandrift --version)" = "plandrift $VERSION"
+      - name: Release notes from the changelog
+        run: awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / && on {exit} on' CHANGELOG.md > notes.md
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "plandrift $VERSION" \
+            --notes-file notes.md \
+            --repo "$GITHUB_REPOSITORY"
+
+  # Install from the published release, the way a user would, on each OS.
+  verify:
+    needs: release
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: pip install from the release URL
+        working-directory: ${{ runner.temp }}
+        run: |
+          version="${GITHUB_REF_NAME#drift-v}"
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/plandrift-$version-py3-none-any.whl"
+          python -m pip install "$url"
+          test "$(plandrift --version | tr -d '\r')" = "plandrift $version"

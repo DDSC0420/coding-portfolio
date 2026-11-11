@@ -1,0 +1,93 @@
+name: plandrift
+description: Report Terraform drift and pending changes from plan JSON, in the job summary and as outputs.
+author: Kyran
+branding:
+  icon: alert-triangle
+  color: orange
+
+inputs:
+  plan:
+    description: Path to plan JSON (the output of `terraform show -json plan.out`).
+    required: true
+  fail-on:
+    description: "What fails the step: any (drift or pending changes), drift, or never."
+    default: any
+  ignore:
+    description: Ignore rules, one per line. ADDRESS or ADDRESS:ATTRIBUTE; * and ? are wildcards.
+    default: ""
+  summary:
+    description: Add the Markdown report to the job summary (true/false).
+    default: "true"
+
+outputs:
+  exit-code:
+    description: 0 nothing found, 2 found (per fail-on), 1 error.
+    value: ${{ steps.check.outputs.exit-code }}
+  drift-count:
+    description: Resources changed outside Terraform.
+    value: ${{ steps.check.outputs.drift-count }}
+  change-count:
+    description: Pending changes in the plan.
+    value: ${{ steps.check.outputs.change-count }}
+  report-json:
+    description: Path to the JSON report.
+    value: ${{ steps.check.outputs.report-json }}
+  report-markdown:
+    description: Path to the Markdown report (e.g. to post as a PR comment).
+    value: ${{ steps.check.outputs.report-markdown }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      run: |
+        # Install from this action's own folder into a private venv: no PyPI release needed,
+        # and nothing touches the job's own Python environment.
+        if [ "$RUNNER_OS" = "Windows" ]; then PY=python; else PY=python3; fi
+        VENV="$RUNNER_TEMP/plandrift-venv"
+        "$PY" -m venv "$VENV"
+        if [ -d "$VENV/Scripts" ]; then BIN="$VENV/Scripts"; else BIN="$VENV/bin"; fi
+        "$BIN/python" -m pip install --quiet --disable-pip-version-check "$GITHUB_ACTION_PATH"
+        echo "bin=$BIN" >> "$GITHUB_OUTPUT"
+
+    - id: check
+      shell: bash
+      env:
+        BIN: ${{ steps.install.outputs.bin }}
+        PLAN: ${{ inputs.plan }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        IGNORE: ${{ inputs.ignore }}
+        SUMMARY: ${{ inputs.summary }}
+      run: |
+        args=(--fail-on "$FAIL_ON")
+        while IFS= read -r rule; do
+          rule="${rule%$'\r'}"
+          if [ -n "${rule// /}" ]; then args+=(--ignore "$rule"); fi
+        done <<< "$IGNORE"
+
+        out="$RUNNER_TEMP/plandrift"
+        mkdir -p "$out"
+        set +e
+        "$BIN/plandrift" check "$PLAN" "${args[@]}" -f json -o "$out/report.json"
+        code=$?
+        set -e
+        if [ "$code" = 1 ]; then
+          echo "::error title=plandrift::couldn't read $PLAN (see the message above)"
+          echo "exit-code=1" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi
+        "$BIN/plandrift" check "$PLAN" "${args[@]}" -f markdown -o "$out/report.md" || true
+        "$BIN/plandrift" check "$PLAN" "${args[@]}" --color always || true
+
+        if [ "$SUMMARY" = "true" ]; then cat "$out/report.md" >> "$GITHUB_STEP_SUMMARY"; fi
+        summary() { "$BIN/python" -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8'))['summary'][sys.argv[2]])" "$out/report.json" "$1" | tr -d '\r'; }
+        {
+          echo "exit-code=$code"
+          echo "drift-count=$(summary drift)"
+          echo "change-count=$(summary changes)"
+          echo "report-json=$out/report.json"
+          echo "report-markdown=$out/report.md"
+        } >> "$GITHUB_OUTPUT"
+        if [ "$code" = 2 ]; then echo "::warning title=plandrift::$(summary headline)"; fi
+        exit "$code"

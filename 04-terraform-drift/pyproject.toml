@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "plandrift"
+dynamic = ["version"]
+description = "Report Terraform drift (changes made outside Terraform) and pending changes from plan JSON, for CI and PR comments."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Kyran" }]
+keywords = ["terraform", "opentofu", "drift", "infrastructure-as-code", "ci"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Systems Administration",
+  "Topic :: Software Development :: Build Tools",
+]
+dependencies = []
+
+[project.scripts]
+plandrift = "plandrift.cli:main"
+
+[project.urls]
+Source = "https://github.com/DDSC0420/coding-portfolio/tree/main/04-terraform-drift"
+Changelog = "https://github.com/DDSC0420/coding-portfolio/blob/main/04-terraform-drift/CHANGELOG.md"
+Releases = "https://github.com/DDSC0420/coding-portfolio/releases"
+
+[tool.hatch.version]
+path = "src/plandrift/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/plandrift"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "examples", "action.yml", "README.md", "CHANGELOG.md", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

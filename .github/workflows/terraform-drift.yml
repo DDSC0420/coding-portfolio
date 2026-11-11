@@ -1,0 +1,231 @@
+name: terraform-drift
+
+on:
+  push:
+    paths: ["04-terraform-drift/**", ".github/workflows/terraform-drift.yml"]
+  pull_request:
+    paths: ["04-terraform-drift/**", ".github/workflows/terraform-drift.yml"]
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: "Commit the real plan JSON from the e2e run as examples/real (true/false)"
+        default: "false"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 04-terraform-drift
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 04-terraform-drift/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt -e .
+      - run: ruff check .
+      - run: pytest
+
+  # Build once; everything after installs this exact wheel, never the source tree.
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check --strict dist/*
+      - name: The sdist builds and installs too
+        run: |
+          python -m venv /tmp/sdist-venv
+          /tmp/sdist-venv/bin/pip install dist/*.tar.gz
+          /tmp/sdist-venv/bin/plandrift --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: 04-terraform-drift/dist/
+
+  smoke:
+    needs: build
+    name: smoke (${{ matrix.os }}, ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Install the wheel into a clean venv
+        working-directory: .
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          if [ -d "$RUNNER_TEMP/venv/Scripts" ]; then BIN="$RUNNER_TEMP/venv/Scripts"; else BIN="$RUNNER_TEMP/venv/bin"; fi
+          "$BIN/python" -m pip install --quiet dist/*.whl
+          echo "$BIN" >> "$GITHUB_PATH"
+      - name: Smoke test the installed command
+        working-directory: ${{ runner.temp }}
+        env:
+          EX: ${{ github.workspace }}/04-terraform-drift/examples
+        run: |
+          set -x
+          want="plandrift $(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' "$GITHUB_WORKSPACE/04-terraform-drift/src/plandrift/__init__.py")"
+          test "$(plandrift --version | tr -d '\r')" = "$want"
+          code() { set +e; "$@" > out.txt; echo $? > rc.txt; set -e; cat out.txt; cat rc.txt; }
+          code plandrift check "$EX/console-changes.json";                  test "$(cat rc.txt)" = 2
+          grep -q "Drift found: 4 changed outside Terraform." out.txt
+          code plandrift check "$EX/no-drift.json";                         test "$(cat rc.txt)" = 0
+          code plandrift check "$EX/drift-and-changes.json" --fail-on drift -f json; test "$(cat rc.txt)" = 2
+          python -c "import json; d=json.load(open('out.txt')); assert d['summary']['changes'] == 8, d['summary']"
+          if grep -q "DO-NOT-PRINT" out.txt; then echo "a sensitive value leaked"; exit 1; fi
+          code plandrift check "$EX/drift-and-changes.json" -f markdown -o report.md; test "$(cat rc.txt)" = 2
+          grep -q "### Pending changes (8)" report.md
+          code plandrift check does-not-exist.json;                         test "$(cat rc.txt)" = 1
+          code plandrift check --format xml x.json;                         test "$(cat rc.txt)" = 1
+          code python -m plandrift check - < "$EX/console-changes.json";    test "$(cat rc.txt)" = 2
+
+  # Real Terraform, real providers, real drift. Free: local + random providers and a Consul dev server.
+  e2e:
+    needs: build
+    name: e2e (${{ matrix.tool }} ${{ matrix.version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { tool: terraform, version: "1.9.8" }
+          - { tool: terraform, version: "latest" }
+          - { tool: tofu, version: "latest" }
+    services:
+      consul:
+        image: hashicorp/consul:1.20
+        ports: ["8500:8500"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: 04-terraform-drift/dist
+      - run: pip install dist/*.whl
+      - uses: hashicorp/setup-terraform@v3
+        if: matrix.tool == 'terraform'
+        with:
+          terraform_version: ${{ matrix.version }}
+          terraform_wrapper: false # the wrapper would mangle `terraform show -json` output
+      - uses: opentofu/setup-opentofu@v1
+        if: matrix.tool == 'tofu'
+        with:
+          tofu_version: ${{ matrix.version }}
+          tofu_wrapper: false
+      - name: Wait for Consul
+        run: |
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8500/v1/status/leader | grep -q ':' && exit 0
+            sleep 1
+          done
+          echo "Consul didn't start"; exit 1
+      - name: Apply, drift, report
+        run: e2e/run.sh
+        env:
+          TF: ${{ matrix.tool }}
+          OUT_DIR: ${{ github.workspace }}/04-terraform-drift/e2e/plans
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-plans-${{ matrix.tool }}-${{ matrix.version }}
+          path: 04-terraform-drift/e2e/plans/
+
+  # Only the e2e run with the newest Terraform refreshes the committed real-plan examples.
+  snapshot:
+    if: github.event_name == 'workflow_dispatch' && inputs.snapshot == 'true'
+    needs: [e2e, smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-plans-terraform-latest
+          path: /tmp/plans
+      - name: Commit the real plans as examples
+        run: |
+          mkdir -p examples/real
+          cp /tmp/plans/clean.json /tmp/plans/refresh-only.json /tmp/plans/full.json examples/real/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/real
+          git commit -m "plandrift: refresh real plan examples from the e2e run" && git push
+
+  # The composite Action other repos can use, run the way they'd run it.
+  action:
+    needs: test
+    name: action (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: drift
+        uses: ./04-terraform-drift
+        with:
+          plan: 04-terraform-drift/examples/drift-and-changes.json
+          fail-on: never
+          ignore: |
+            *:tags_all
+            aws_cloudwatch_log_group.*
+      - name: Check the outputs
+        env:
+          CODE: ${{ steps.drift.outputs.exit-code }}
+          DRIFT: ${{ steps.drift.outputs.drift-count }}
+          CHANGES: ${{ steps.drift.outputs.change-count }}
+          REPORT: ${{ steps.drift.outputs.report-json }}
+        run: |
+          echo "exit=$CODE drift=$DRIFT changes=$CHANGES report=$REPORT"
+          test "$CODE" = 0 && test "$DRIFT" = 4 && test "$CHANGES" = 7
+          test -f "$REPORT"
+      - id: strict
+        uses: ./04-terraform-drift
+        continue-on-error: true
+        with:
+          plan: 04-terraform-drift/examples/console-changes.json
+          summary: "false"
+      - name: With fail-on any, drift fails the step
+        env:
+          OUTCOME: ${{ steps.strict.outcome }}
+          CODE: ${{ steps.strict.outputs.exit-code }}
+        run: test "$OUTCOME" = failure && test "$CODE" = 2

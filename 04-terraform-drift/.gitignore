@@ -1,0 +1,7 @@
+dist/
+e2e/plans/
+e2e/out/
+e2e/.terraform/
+e2e/.terraform.lock.hcl
+e2e/*.tfplan
+e2e/terraform.tfstate*
