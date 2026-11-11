@@ -154,26 +154,40 @@ export async function launch({ width = 1280, height = 900 } = {}) {
      * read from a real screenshot. Catches a highlight that is registered but not drawn.
      */
     async paintedPixels(target = page) {
-      const rects = await target.evaluate(() =>
-        [...(CSS.highlights.get('margin') ?? [])].map((r) => {
+      const { rects, scale } = await target.evaluate(() => ({
+        scale: devicePixelRatio,
+        rects: [...(CSS.highlights.get('margin') ?? [])].map((r) => {
           const b = r.getClientRects()[0];
-          return { x: b.x, y: b.y, width: b.width, height: b.height, text: r.toString() };
+          return { x: b.x, y: b.y, width: b.width, height: b.height };
         }),
-      );
-      const out = [];
-      for (const rect of rects) {
-        const png = await target.screenshot({ clip: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } });
-        const { width, height, pixel } = decodePng(png);
+      }));
+      // One screenshot of the viewport (retried: a just-refocused window can miss a frame).
+      let png;
+      for (let attempt = 1; !png; attempt++) {
+        try {
+          png = await target.screenshot();
+        } catch (err) {
+          if (attempt === 4) throw err;
+          await sleep(400);
+        }
+      }
+      const image = decodePng(png);
+      return rects.map((rect) => {
+        const x0 = Math.max(0, Math.floor(rect.x * scale));
+        const y0 = Math.max(0, Math.floor(rect.y * scale));
+        const x1 = Math.min(image.width, Math.ceil((rect.x + rect.width) * scale));
+        const y1 = Math.min(image.height, Math.ceil((rect.y + rect.height) * scale));
         let yellow = 0;
-        for (let y = 0; y < height; y++) {
-          for (let x = 0; x < width; x++) {
-            const [r, g, b] = pixel(x, y);
+        let total = 0;
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            const [r, g, b] = image.pixel(x, y);
             if (r > 220 && g > 190 && b < 170) yellow++;
+            total++;
           }
         }
-        out.push(yellow / (width * height));
-      }
-      return out;
+        return total ? yellow / total : 0;
+      });
     },
 
     /** Open the real toolbar popup with its keyboard shortcut, and get a handle on it. */
