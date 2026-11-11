@@ -10,6 +10,9 @@ on:
       days:
         description: "Days of live data to fetch"
         default: "14"
+      snapshot:
+        description: "Commit the fetched data as the bundled sample (true/false)"
+        default: "false"
 
 permissions:
   contents: read
@@ -39,6 +42,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -54,3 +59,11 @@ jobs:
           path: |
             02-uk-grid-pipeline/raw
             02-uk-grid-pipeline/site
+      - name: Commit the fetched data as the bundled sample
+        if: inputs.snapshot == 'true'
+        run: |
+          cp raw/intensity.json raw/generation.json sample/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sample
+          git commit -m "Refresh bundled sample from the live API" && git push
