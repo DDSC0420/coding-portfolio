@@ -1,0 +1,5 @@
+grid.duckdb
+*.duckdb
+*.duckdb.wal
+site/
+raw/

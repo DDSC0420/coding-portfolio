@@ -1,0 +1,56 @@
+name: uk-grid-pipeline
+
+on:
+  push:
+    paths: ["02-uk-grid-pipeline/**", ".github/workflows/uk-grid-pipeline.yml"]
+  pull_request:
+    paths: ["02-uk-grid-pipeline/**", ".github/workflows/uk-grid-pipeline.yml"]
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days of live data to fetch"
+        default: "14"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 02-uk-grid-pipeline
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 02-uk-grid-pipeline/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: python -m playwright install --with-deps chromium
+      - run: pytest
+
+  # Manual run against the real API: proves the live path works end to end.
+  live:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m gridwatch run --days "$DAYS" --save-raw raw
+        env:
+          DAYS: ${{ inputs.days }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-run
+          path: |
+            02-uk-grid-pipeline/raw
+            02-uk-grid-pipeline/site

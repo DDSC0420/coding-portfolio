@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GB grid carbon report</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --series: #2a78d6; --border: rgba(11,11,11,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --series: #3987e5; --border: rgba(255,255,255,0.10);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 18px 48px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 16px; margin: 0; }
+  p { margin: 0; }
+  .lede { color: var(--ink-2); max-width: 64ch; }
+  .badge { display: inline-block; margin-top: 10px; padding: 2px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: 13px; color: var(--ink-2); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 22px 0; }
+  .tile, .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .tile .label { color: var(--ink-2); font-size: 13px; }
+  .tile .value { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; margin: 2px 0; }
+  .tile .unit { font-size: 15px; font-weight: 500; color: var(--ink-2); }
+  .tile .note { color: var(--muted); font-size: 13px; }
+  .panel { margin-bottom: 14px; }
+  .panel > .sub { color: var(--ink-2); font-size: 13px; margin-bottom: 8px; }
+  .chart { position: relative; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { fill: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  svg .value-label { fill: var(--ink); }
+  svg .row-label { fill: var(--ink-2); }
+  .grid { stroke: var(--grid); stroke-width: 1; }
+  .axis { stroke: var(--axis); stroke-width: 1; }
+  .line { fill: none; stroke: var(--series); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .mark { fill: var(--series); }
+  .dot { fill: var(--series); stroke: var(--surface); stroke-width: 2; }
+  .cross { stroke: var(--axis); stroke-width: 1; }
+  .hit { fill: transparent; }
+  .hit:hover + .mark, .mark.on { opacity: 0.75; }
+  .tip {
+    position: absolute; pointer-events: none; z-index: 2; transform: translate(-50%, -100%);
+    background: var(--ink); color: var(--surface); border-radius: 8px; padding: 6px 10px;
+    font-size: 13px; line-height: 1.35; white-space: nowrap; opacity: 0; transition: opacity 0.1s;
+  }
+  .tip.show { opacity: 1; }
+  .tip b { font-weight: 650; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+  table { border-collapse: collapse; margin-top: 8px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 3px 14px 3px 0; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--ink-2); font-weight: 600; border-bottom: 1px solid var(--grid); }
+  .checks { list-style: none; padding: 0; margin: 8px 0 0; font-size: 14px; }
+  .checks li { padding: 3px 0; }
+  .checks span { color: var(--ink-2); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 22px; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>How clean is Great Britain's electricity?</h1>
+  <p class="lede" id="lede"></p>
+  <span class="badge" id="badge"></span>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="panel">
+    <h2>Daily average carbon intensity</h2>
+    <p class="sub">gCO₂ per kWh of electricity, averaged over each day (UTC). Lower is cleaner.</p>
+    <div class="chart" id="daily"></div>
+    <details><summary>Show as table</summary><div id="daily-table"></div></details>
+  </section>
+
+  <section class="panel">
+    <h2>The shape of an average day</h2>
+    <p class="sub">Average carbon intensity by hour of day (UTC), gCO₂/kWh.</p>
+    <div class="chart" id="hourly"></div>
+    <details><summary>Show as table</summary><div id="hourly-table"></div></details>
+  </section>
+
+  <section class="panel">
+    <h2>Where the electricity came from</h2>
+    <p class="sub">Average share of generation by source over the period.</p>
+    <div class="chart" id="mix"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Data quality checks</h2>
+    <p class="sub">The pipeline runs these before it will publish this page.</p>
+    <ul class="checks" id="checks"></ul>
+  </section>
+
+  <footer id="footer"></footer>
+</main>
+
+<script>
+const DATA = /*DATA*/null/*END*/;
+const NS = "http://www.w3.org/2000/svg";
+const $ = (id) => document.getElementById(id);
+const fmtDay = (iso) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+const hourLabel = (h) => String(h).padStart(2, "0") + ":00";
+
+function svgEl(tag, attrs = {}, text) {
+  const node = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function niceScale(value) {
+  // Round the axis to a tidy step (1, 2, 2.5 or 5 times a power of ten) so tick labels are whole numbers.
+  const rough = (value || 1) / 4, pow = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((m) => m >= rough);
+  return { step, max: step * Math.ceil((value || 1) / step) };
+}
+function tooltip(host) {
+  const tip = el("div", "tip");
+  host.append(tip);
+  return {
+    show(x, y, title, body) {
+      tip.replaceChildren(el("b", "", title), document.createElement("br"), document.createTextNode(body));
+      tip.style.left = `${Math.max(70, Math.min(host.clientWidth - 70, x))}px`;
+      tip.style.top = `${y - 10}px`;
+      tip.classList.add("show");
+    },
+    hide() { tip.classList.remove("show"); },
+  };
+}
+function frame(host, height, peak, pad) {
+  const { step, max: yMax } = niceScale(peak);
+  host.replaceChildren();
+  const width = Math.max(300, host.clientWidth);
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img" });
+  const plot = { x0: pad.left, x1: width - pad.right, y0: pad.top, y1: height - pad.bottom };
+  const y = (v) => plot.y1 - (v / yMax) * (plot.y1 - plot.y0);
+  for (let i = 0; i * step <= yMax; i++) {
+    const v = step * i;
+    svg.append(svgEl("line", { class: i ? "grid" : "axis", x1: plot.x0, x2: plot.x1, y1: y(v), y2: y(v) }));
+    svg.append(svgEl("text", { x: plot.x0 - 8, y: y(v) + 4, "text-anchor": "end" }, String(+v.toFixed(1))));
+  }
+  host.append(svg);
+  return { svg, plot, y, width };
+}
+
+function drawDaily() {
+  const rows = DATA.daily, host = $("daily");
+  if (!rows.length) return;
+  const { svg, plot, y } = frame(host, 250, Math.max(...rows.map((r) => r.avg)), { top: 12, right: 14, bottom: 28, left: 40 });
+  const x = (i) => rows.length === 1 ? (plot.x0 + plot.x1) / 2 : plot.x0 + (i / (rows.length - 1)) * (plot.x1 - plot.x0);
+  svg.setAttribute("aria-label", `Line chart of daily average carbon intensity from ${fmtDay(rows[0].day)} to ${fmtDay(rows.at(-1).day)}`);
+  svg.append(svgEl("path", { class: "line", d: rows.map((r, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(r.avg).toFixed(1)}`).join("") }));
+  const every = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((plot.x1 - plot.x0) / 80))));
+  rows.forEach((r, i) => {
+    if (i % every === 0) svg.append(svgEl("text", { x: x(i), y: plot.y1 + 18, "text-anchor": i === 0 ? "start" : i === rows.length - 1 ? "end" : "middle" }, fmtDay(r.day)));
+  });
+  const cross = svgEl("line", { class: "cross", y1: plot.y0, y2: plot.y1, visibility: "hidden" });
+  const dot = svgEl("circle", { class: "dot", r: 5, visibility: "hidden" });
+  const hit = svgEl("rect", { class: "hit", x: plot.x0, y: plot.y0, width: plot.x1 - plot.x0, height: plot.y1 - plot.y0 });
+  svg.append(cross, dot, hit);
+  const tip = tooltip(host);
+  const move = (event) => {
+    const box = svg.getBoundingClientRect();
+    const px = ((event.clientX - box.left) / box.width) * svg.viewBox.baseVal.width;
+    const i = Math.max(0, Math.min(rows.length - 1, Math.round(((px - plot.x0) / (plot.x1 - plot.x0)) * (rows.length - 1))));
+    const r = rows[i], scale = box.width / svg.viewBox.baseVal.width;
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(r.avg)); dot.setAttribute("visibility", "visible");
+    tip.show(x(i) * scale, y(r.avg) * scale, fmtDay(r.day), `${r.avg} gCO₂/kWh (range ${r.min}–${r.max})`);
+  };
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { tip.hide(); cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); });
+}
+
+function drawHourly() {
+  const rows = DATA.hourly, host = $("hourly");
+  if (!rows.length) return;
+  const { svg, plot, y } = frame(host, 230, Math.max(...rows.map((r) => r.avg)), { top: 12, right: 14, bottom: 28, left: 40 });
+  svg.setAttribute("aria-label", "Bar chart of average carbon intensity for each hour of the day");
+  const slot = (plot.x1 - plot.x0) / 24, bar = Math.max(4, slot - 2), tip = tooltip(host);
+  for (const r of rows) {
+    const left = plot.x0 + r.hour * slot + (slot - bar) / 2, top = y(r.avg), radius = Math.min(4, bar / 2, plot.y1 - top);
+    const d = `M${left},${plot.y1}V${top + radius}Q${left},${top} ${left + radius},${top}H${left + bar - radius}Q${left + bar},${top} ${left + bar},${top + radius}V${plot.y1}Z`;
+    const hit = svgEl("rect", { class: "hit", x: plot.x0 + r.hour * slot, y: plot.y0, width: slot, height: plot.y1 - plot.y0 });
+    const mark = svgEl("path", { class: "mark", d });
+    const scale = () => svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+    const show = () => tip.show((left + bar / 2) * scale(), top * scale(), `${hourLabel(r.hour)}–${hourLabel((r.hour + 1) % 24)} UTC`, `${r.avg} gCO₂/kWh`);
+    hit.addEventListener("pointerenter", show);
+    hit.addEventListener("pointerdown", show);
+    hit.addEventListener("pointerleave", () => tip.hide());
+    svg.append(hit, mark);
+    if (r.hour % (slot < 26 ? 6 : 3) === 0) svg.append(svgEl("text", { x: left + bar / 2, y: plot.y1 + 18, "text-anchor": "middle" }, hourLabel(r.hour)));
+  }
+}
+
+function drawMix() {
+  const rows = DATA.mix, host = $("mix");
+  host.replaceChildren();
+  if (!rows.length) return;
+  const width = Math.max(300, host.clientWidth), rowH = 30, labelW = 84, valueW = 56;
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${rows.length * rowH}`, role: "img", "aria-label": "Bar chart of average generation share by source" });
+  const max = Math.max(...rows.map((r) => r.share)), span = width - labelW - valueW;
+  rows.forEach((r, i) => {
+    const yMid = i * rowH + rowH / 2, w = Math.max(2, (r.share / max) * span), h = 16, rad = Math.min(4, w / 2);
+    svg.append(svgEl("text", { class: "row-label", x: labelW - 10, y: yMid + 4, "text-anchor": "end" }, r.fuel));
+    svg.append(svgEl("path", { class: "mark", d: `M${labelW},${yMid - h / 2}H${labelW + w - rad}Q${labelW + w},${yMid - h / 2} ${labelW + w},${yMid - h / 2 + rad}V${yMid + h / 2 - rad}Q${labelW + w},${yMid + h / 2} ${labelW + w - rad},${yMid + h / 2}H${labelW}Z` }));
+    svg.append(svgEl("text", { class: "value-label", x: labelW + w + 8, y: yMid + 4 }, `${r.share.toFixed(1)}%`));
+  });
+  svg.append(svgEl("line", { class: "axis", x1: labelW, x2: labelW, y1: 0, y2: rows.length * rowH }));
+  host.append(svg);
+}
+
+function table(host, headers, rows) {
+  const t = el("table"), head = el("tr");
+  headers.forEach((h) => head.append(el("th", "", h)));
+  t.append(head);
+  for (const row of rows) { const tr = el("tr"); row.forEach((c) => tr.append(el("td", "", String(c)))); t.append(tr); }
+  host.replaceChildren(t);
+}
+
+function drawStatic() {
+  const s = DATA.summary, m = DATA.meta;
+  $("lede").textContent = `Half-hourly data for the GB grid from ${fmtDay(m.first.slice(0, 10))} to ${fmtDay(m.last.slice(0, 10))} ${m.last.slice(0, 4)}: ${m.periods.toLocaleString("en-GB")} measured half-hours, pulled, checked and modelled by a small pipeline.`;
+  $("badge").textContent = m.source === "sample" ? "Bundled sample data" : "Live data from the Carbon Intensity API";
+  const tiles = [
+    ["Average carbon intensity", s.avg_intensity, "gCO₂/kWh", `Daily averages ranged ${s.best_day.avg}–${s.worst_day.avg}`],
+    ["Zero-carbon share", s.zero_carbon_share, "%", "Wind, solar, nuclear and hydro"],
+    ["Cleanest hour of the day", hourLabel(s.cleanest_hour.hour), "UTC", `${s.cleanest_hour.avg} gCO₂/kWh on average`],
+    ["Dirtiest hour of the day", hourLabel(s.dirtiest_hour.hour), "UTC", `${s.dirtiest_hour.avg} gCO₂/kWh on average`],
+  ];
+  $("tiles").replaceChildren(...tiles.map(([label, value, unit, note]) => {
+    const tile = el("div", "tile"), v = el("p", "value", String(value));
+    v.append(" ", el("span", "unit", unit));
+    tile.append(el("p", "label", label), v, el("p", "note", note));
+    return tile;
+  }));
+  table($("daily-table"), ["Day", "Average", "Min", "Max", "Half-hours"], DATA.daily.map((r) => [fmtDay(r.day), r.avg, r.min, r.max, r.periods]));
+  table($("hourly-table"), ["Hour (UTC)", "Average gCO₂/kWh"], DATA.hourly.map((r) => [hourLabel(r.hour), r.avg]));
+  $("checks").replaceChildren(...DATA.checks.map((c) => {
+    const li = el("li", "", `${c.passed ? "✓" : "✗"} ${c.name} `);
+    li.append(el("span", "", `· ${c.detail}`));
+    return li;
+  }));
+  $("footer").textContent = `Generated ${m.generated_at} UTC. Source: Carbon Intensity API, National Energy System Operator (NESO). All times UTC.`;
+}
+
+function draw() { drawDaily(); drawHourly(); drawMix(); }
+drawStatic();
+draw();
+let resizeTimer;
+addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 120); });
+</script>
+</body>
+</html>

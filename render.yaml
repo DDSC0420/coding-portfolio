@@ -1,9 +1,0 @@
-# Render blueprint: one free web service per deployable project in this repo.
-services:
-  - type: web
-    name: live-incident-board
-    runtime: docker
-    plan: free
-    rootDir: 01-live-incident-board
-    healthCheckPath: /healthz
-    autoDeploy: true

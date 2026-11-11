@@ -2,8 +2,6 @@
 
 **Attach:** a 30 to 60 second screen recording. Two browser windows side by side, press "Run drill" in one, both move together. Then drag one card in the left window and show it move on the right.
 
-**Before posting:** replace [LIVE LINK] with the deployed URL.
-
 ---
 
 Two browser windows. I touch one. The other moves.
@@ -24,7 +22,6 @@ What it isn't: it runs as one process with state in memory. Scaling it out would
 
 Built with Claude. I set the brief and the bar; the tests back every claim.
 
-Try it (open it in two tabs): [LIVE LINK]
-Code: https://github.com/DDSC0420/coding-portfolio/tree/main/01-live-incident-board
+Code and a one-minute local setup: https://github.com/DDSC0420/coding-portfolio/tree/main/01-live-incident-board
 
 #Python #WebSockets #BuildInPublic

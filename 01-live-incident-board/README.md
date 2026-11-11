@@ -6,13 +6,29 @@ A real-time, multi-user incident board. Open it in two tabs, change something in
 
 ![The board with four status columns and a live activity feed](docs/board.png)
 
-## Try it
+## Try it (runs on your machine, about a minute)
 
-**Live demo:** _add the Render URL here once deployed (see "Deploy" below)_
+With Python 3.12+:
 
-1. Open the link. You land on a fresh board with demo incidents.
-2. Press **Copy invite link** and open it in a second tab or on your phone.
-3. Declare an incident, move a card, post an update. Watch the other screen.
+```bash
+git clone https://github.com/DDSC0420/coding-portfolio
+cd coding-portfolio/01-live-incident-board
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app
+```
+
+Or with Docker:
+
+```bash
+docker build -t incident-board . && docker run --rm -p 8000:8000 incident-board
+```
+
+Then open <http://localhost:8000>:
+
+1. You land on a fresh board with demo incidents.
+2. Open the same address in a second window, side by side.
+3. Declare an incident, move a card, post an update. Watch the other window.
 4. Press **Run drill** to play a scripted outage from first alert to resolved.
 
 ## What it does
@@ -49,20 +65,10 @@ app/rooms.py   Board rules: pure Python, no framework, fully unit-tested
 | Unbounded memory | Caps on boards, people per board, incidents, timeline length and text length; idle boards expire |
 | Malformed input | Every field validated; bad messages get an error and the connection stays up |
 
-## Run it locally
-
-```bash
-cd 01-live-incident-board
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements-dev.txt
-uvicorn app.main:app --reload
-```
-
-Open <http://localhost:8000>.
-
 ## Tests
 
 ```bash
+pip install -r requirements-dev.txt
 pytest                              # everything
 pytest tests/test_rooms.py          # rules only, no server
 PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser tests
@@ -76,18 +82,9 @@ PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser 
 
 The browser tests need a browser: `python -m playwright install chromium`. They skip themselves if Playwright isn't installed.
 
-## Deploy
-
-The repo root has a `render.yaml` blueprint for Render's free tier.
-
-1. Go to <https://render.com/deploy?repo=https://github.com/DDSC0420/coding-portfolio>
-2. Sign in with GitHub and approve the blueprint.
-3. Paste the URL it gives you into "Live demo" above.
-
-Free instances sleep when idle, so the first visit after a quiet spell takes up to a minute to wake.
-
 ## Honest scope
 
+- **Local only for now.** There's no hosted demo; it runs on your machine. The Dockerfile is there for when it is hosted, but hasn't been built in CI.
 - **One process, state in memory.** Boards vanish on restart and the app can't run as several instances. Scaling out would need shared state and a pub/sub layer such as Redis.
 - **No accounts.** Anyone with a board link can edit that board. Fine for a demo, not for real incidents.
 - **Last-writer-loses, not merging.** Conflicts are detected and refused, not merged.
