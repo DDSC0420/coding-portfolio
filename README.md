@@ -10,7 +10,7 @@ Built with heavy AI assistance (Claude). I set the brief, review the design and 
 | 02 | [UK grid data pipeline](02-uk-grid-pipeline/) | Data engineering, SQL | Done |
 | 03 | [Intake: CV to structured record](03-intake/) | AI extraction, validation | Done |
 | 04 | [plandrift: Terraform drift report](04-terraform-drift/) | Packaging, releases, CI | Done |
-| 05 | Subscription SaaS starter | Full-stack, auth, payments | Planned |
+| 05 | [Tally: subscription SaaS starter](05-saas-starter/) | Full-stack, auth, payments | Done |
 | 06 | Chrome extension | Browser platform | Planned |
 | 07 | Browser physics game | Graphics, game loop | Planned |
 | 08 | RELAY workflow engine | Distributed systems | Planned |
