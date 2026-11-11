@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live incident board</title>
+  <meta name="description" content="A real-time, multi-user incident board. Open it in two tabs and watch them stay in sync.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e13'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%234fd18b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="pulse" id="conn-dot" aria-hidden="true"></span>
+      <div>
+        <h1>Incident board</h1>
+        <p class="sub"><span id="conn-text">Connecting…</span> · board <code id="room-id"></code></p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <ul class="people" id="people" aria-label="People on this board"></ul>
+      <button class="btn ghost" id="invite" type="button">Copy invite link</button>
+      <button class="btn" id="drill" type="button">Run drill</button>
+    </div>
+  </header>
+
+  <section class="hint" id="hint">
+    <p><strong>Try it:</strong> open this page in a second tab or send the link to someone. Every change appears on every screen instantly.</p>
+    <button class="icon" id="hint-close" type="button" aria-label="Dismiss tip">×</button>
+  </section>
+
+  <form class="declare" id="declare" autocomplete="off">
+    <label class="sr" for="title">Incident title</label>
+    <input id="title" name="title" maxlength="120" placeholder="What's broken? e.g. Payments timing out" required>
+    <label class="sr" for="severity">Severity</label>
+    <select id="severity" name="severity">
+      <option value="sev1">SEV1 · critical</option>
+      <option value="sev2" selected>SEV2 · major</option>
+      <option value="sev3">SEV3 · minor</option>
+    </select>
+    <button class="btn danger" type="submit">Declare incident</button>
+  </form>
+
+  <main class="layout">
+    <section class="board" id="board" aria-label="Incidents by status"></section>
+    <aside class="feed" aria-label="Activity">
+      <h2>Activity</h2>
+      <ol id="activity"></ol>
+    </aside>
+  </main>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Incident detail" hidden>
+    <header>
+      <span class="sev" id="d-sev"></span>
+      <button class="icon" id="d-close" type="button" aria-label="Close detail">×</button>
+    </header>
+    <h2 id="d-title"></h2>
+    <p class="sub" id="d-meta"></p>
+    <div class="steps" id="d-steps" role="group" aria-label="Change status"></div>
+    <h3>Timeline</h3>
+    <ol class="timeline" id="d-timeline"></ol>
+    <form id="note-form" autocomplete="off">
+      <label class="sr" for="note">Post an update</label>
+      <input id="note" maxlength="280" placeholder="Post an update…" required>
+      <button class="btn" type="submit">Post</button>
+    </form>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <footer class="foot">
+    <span>You are <button class="link" id="me" type="button" title="Change your name"></button></span>
+    <form id="name-form" hidden autocomplete="off">
+      <label class="sr" for="name">Your name</label>
+      <input id="name" maxlength="24" placeholder="Your name">
+      <button class="btn ghost" type="submit">Save</button>
+    </form>
+    <span class="grow"></span>
+    <span>Demo data. Boards reset when idle.</span>
+  </footer>
+
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>
