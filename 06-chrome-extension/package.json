@@ -1,0 +1,23 @@
+{
+  "name": "margin-highlighter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Margin: a Chrome extension for highlights that stay put. Development tooling only; the extension itself has no dependencies.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "npm run test:unit && npm run test:browser",
+    "test:unit": "node --test \"test/unit/*.test.js\"",
+    "test:browser": "node --test --test-concurrency=1 \"test/browser/*.test.js\"",
+    "zip": "node scripts/zip.mjs",
+    "icons": "node scripts/icons.mjs",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

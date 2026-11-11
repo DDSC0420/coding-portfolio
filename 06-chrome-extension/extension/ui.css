@@ -1,0 +1,86 @@
+/* Shared look for Margin's own pages (popup and library). */
+:root {
+  color-scheme: light dark;
+  --ink: #1d1f24;
+  --muted: #5d6270;
+  --line: #e3e4e8;
+  --paper: #ffffff;
+  --wash: #f6f6f3;
+  --mark: rgb(255 214 10 / 0.5);
+  --mark-solid: #ffd60a;
+  --ok: #1f7a4d;
+  --warn: #9a6700;
+  --danger: #b42318;
+  --focus: #2457c5;
+  --radius: 8px;
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ecedf0;
+    --muted: #a4a8b3;
+    --line: #34373f;
+    --paper: #1b1d22;
+    --wash: #23262d;
+    --mark: rgb(255 214 10 / 0.32);
+    --ok: #5cc98f;
+    --warn: #e3b341;
+    --danger: #ff8a7a;
+    --focus: #8fb0ff;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+h1, h2 { margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--wash);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button.link { background: none; border: none; padding: 2px 0; color: var(--focus); }
+button.link:hover { text-decoration: underline; }
+button.delete:hover { color: var(--danger); border-color: var(--danger); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+blockquote {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+blockquote span.mark, mark {
+  background: var(--mark);
+  color: inherit;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 1px;
+}
+
+kbd {
+  font: 600 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: var(--wash);
+}
+
+.status { font-size: 12px; font-weight: 600; }
+.status.ok { color: var(--ok); }
+.status.changed { color: var(--ok); }
+.status.lost { color: var(--warn); }
+
+.hint { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }

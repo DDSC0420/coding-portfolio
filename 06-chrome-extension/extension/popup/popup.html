@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Margin</title>
+  <link rel="stylesheet" href="../ui.css">
+  <link rel="stylesheet" href="popup.css">
+  <script type="module" src="popup.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <h1><img src="../icons/icon32.png" alt="" width="20" height="20"> Margin</h1>
+    <button type="button" class="link" id="open-library">All highlights</button>
+  </header>
+
+  <main>
+    <p class="site" id="site"></p>
+    <p class="summary" id="summary">Looking at this page…</p>
+    <ol class="highlights" id="list"></ol>
+  </main>
+
+  <section class="remember" id="remember-box" hidden>
+    <label class="switch">
+      <input type="checkbox" id="remember" role="switch">
+      <span class="track" aria-hidden="true"></span>
+      <span>Show highlights on <b id="host"></b> automatically</span>
+    </label>
+    <p class="hint" id="remember-hint"></p>
+  </section>
+
+  <footer class="tip" id="tip">
+    Select text, then right-click → <b>Highlight with Margin</b>, or press <kbd id="shortcut">Alt+Shift+H</kbd>.
+  </footer>
+</body>
+</html>

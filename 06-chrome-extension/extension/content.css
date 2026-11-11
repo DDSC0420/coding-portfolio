@@ -1,0 +1,9 @@
+/* Margin draws highlights with the CSS Custom Highlight API: the page's own elements are never
+   wrapped or changed, so its scripts and layout don't notice. */
+::highlight(margin) {
+  background-color: rgb(255 214 10 / 0.5) !important;
+}
+
+::highlight(margin-flash) {
+  background-color: rgb(255 140 0 / 0.8) !important;
+}

@@ -1,0 +1,52 @@
+name: chrome-extension
+
+on:
+  push:
+    paths: ["06-chrome-extension/**", ".github/workflows/chrome-extension.yml"]
+  pull_request:
+    paths: ["06-chrome-extension/**", ".github/workflows/chrome-extension.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 06-chrome-extension
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: 06-chrome-extension/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - name: Unit tests (anchoring, storage, search and export, manifest guards)
+        run: npm run test:unit
+      - name: Install a browser, a virtual display and xdotool
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y xvfb xdotool
+      - name: Browser tests (the real extension in a visible Chrome on a virtual display)
+        run: xvfb-run -a -s "-screen 0 1280x900x24" npm run test:browser
+      - name: Pack the extension
+        run: |
+          npm run zip
+          unzip -t dist/margin-*.zip
+          unzip -l dist/margin-*.zip | grep -q ' manifest.json$'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: margin-extension
+          path: 06-chrome-extension/dist/*.zip
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-screenshots
+          path: 06-chrome-extension/test-results/
+          if-no-files-found: ignore

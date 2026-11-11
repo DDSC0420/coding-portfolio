@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All highlights · Margin</title>
+  <link rel="icon" href="../icons/icon32.png">
+  <link rel="stylesheet" href="../ui.css">
+  <link rel="stylesheet" href="library.css">
+  <script type="module" src="library.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1><img src="../icons/icon48.png" alt="" width="28" height="28"> All highlights</h1>
+    <input type="search" id="q" placeholder="Search highlights, titles and addresses" aria-label="Search highlights" autocomplete="off">
+    <button type="button" id="export">Export Markdown</button>
+  </header>
+
+  <main>
+    <p class="summary" id="summary" aria-live="polite">Loading…</p>
+    <div id="pages"></div>
+  </main>
+
+  <aside>
+    <section>
+      <h2>Sites that show highlights automatically</h2>
+      <ul class="sites" id="sites"></ul>
+      <p class="hint">Margin can read pages on these sites, only to find your highlights. Removing a site keeps its highlights: they show again whenever you click Margin there.</p>
+    </section>
+    <section>
+      <h2>Where this lives</h2>
+      <p class="hint">Everything is kept in this Chrome profile’s extension storage. Nothing is sent anywhere: Margin makes no network requests. Export to keep a copy.</p>
+    </section>
+  </aside>
+</body>
+</html>

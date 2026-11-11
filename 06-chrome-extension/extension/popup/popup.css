@@ -1,0 +1,59 @@
+body { width: 360px; }
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.bar h1 { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+
+main { padding: 10px 14px 4px; }
+.site { margin: 0; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.summary { margin: 2px 0 8px; font-weight: 600; }
+
+.highlights { list-style: none; margin: 0; padding: 0; max-height: 330px; overflow-y: auto; }
+.highlight { padding: 9px 0; border-top: 1px solid var(--line); }
+.highlight blockquote {
+  padding-left: 10px;
+  border-left: 3px solid var(--mark-solid);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.meta { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.meta .status { margin-right: auto; }
+.meta button { font-size: 12px; padding: 1px 8px; }
+
+.remember { margin: 6px 14px 0; padding: 10px 0 0; border-top: 1px solid var(--line); }
+.switch { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track {
+  flex: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--line);
+  position: relative;
+  transition: background 0.15s;
+}
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  transition: transform 0.15s;
+}
+.switch input:checked + .track { background: var(--ok); }
+.switch input:checked + .track::after { transform: translateX(14px); }
+.switch input:focus-visible + .track { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.tip { margin: 10px 0 0; padding: 10px 14px 12px; background: var(--wash); color: var(--muted); font-size: 12.5px; }
+.unsupported .remember { display: none; }

@@ -1,0 +1,60 @@
+body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-areas: "top top" "main aside";
+  gap: 0 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px 48px;
+  background: var(--paper);
+}
+
+.top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+.top h1 { display: flex; align-items: center; gap: 10px; font-size: 22px; margin-right: auto; }
+.top input {
+  font: inherit;
+  width: 340px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+}
+#export { padding: 7px 14px; font-weight: 600; background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#export:disabled { opacity: 0.4; cursor: default; }
+
+main { grid-area: main; min-width: 0; }
+.summary { color: var(--muted); margin: 18px 0 8px; }
+
+.page { padding: 18px 0 14px; border-bottom: 1px solid var(--line); }
+.page h2 { font-size: 17px; }
+.page h2 a { color: inherit; text-decoration: none; }
+.page h2 a:hover { text-decoration: underline; }
+.url { margin: 2px 0 10px; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+.highlights { list-style: none; margin: 0; padding: 0; }
+.highlight { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 8px 0; }
+.highlight blockquote { font-size: 15px; line-height: 1.6; }
+.highlight .meta { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 12px; white-space: nowrap; padding-top: 3px; }
+.highlight .meta button { font-size: 12px; padding: 1px 8px; }
+.forget { font-size: 12.5px; margin-top: 4px; }
+
+aside { grid-area: aside; padding-top: 18px; }
+aside section { margin-bottom: 26px; }
+aside h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
+.sites { list-style: none; margin: 0; padding: 0; }
+.sites li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.sites li.none { color: var(--muted); font-size: 13px; border: none; }
+
+@media (max-width: 860px) {
+  body { grid-template-columns: 1fr; grid-template-areas: "top" "main" "aside"; }
+  .top { flex-wrap: wrap; }
+  .top input { width: 100%; order: 3; }
+}

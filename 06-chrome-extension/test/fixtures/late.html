@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Loads in stages</title>
+  <style>body { font: 18px/1.6 Georgia, serif; max-width: 640px; margin: 48px auto; padding: 0 24px; }</style>
+</head>
+<body>
+  <h1>Harbour notices</h1>
+  <p id="intro">Notices appear below once they have loaded.</p>
+  <div id="notices"></div>
+  <script>
+    // Like a page that fetches its content after the first paint. #delay=1500 slows it down
+    // without changing which page it is (Margin ignores a plain #fragment).
+    const delay = Number(new URLSearchParams(location.hash.slice(1)).get('delay') ?? 0);
+    setTimeout(() => {
+      const p = document.createElement('p');
+      p.textContent = 'The slipway will be closed for repairs from Monday until the spring tides have passed.';
+      document.getElementById('notices').append(p);
+    }, delay);
+  </script>
+</body>
+</html>
