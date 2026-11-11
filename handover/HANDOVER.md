@@ -20,7 +20,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 | # | Project | Skill | Status |
 | --- | --- | --- | --- |
-| 01 | Live incident board | Real-time, WebSockets | Code done, 49 tests pass locally. Waiting on Kyran: deploy, recording, post |
+| 01 | Live incident board | Real-time, WebSockets | Code done, 49 tests green in CI. Waiting on Kyran: deploy, recording, post |
 | 02 | UK energy data pipeline | Data engineering, SQL | **NEXT** |
 | 03 | Intake: CV to structured record | AI extraction | Planned (doubles as demo of the recruitment tool Kyran plans to sell) |
 | 04 | Terraform drift CLI | Packaging, releases | Planned |
@@ -38,15 +38,14 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 ## Open items for Kyran (project 01)
 
-1. Check the CI run went green on GitHub (Actions tab). It has not been confirmed from the build session.
-2. Deploy: open https://render.com/deploy?repo=https://github.com/DDSC0420/coding-portfolio and sign in with GitHub. The Dockerfile and `render.yaml` have not been tested on Render yet; if the deploy fails, paste the error into the next chat.
-3. Put the live URL into `01-live-incident-board/README.md` and `POST.md`.
-4. Record the demo (two windows side by side, press "Run drill").
-5. Post it.
+1. Deploy: open https://render.com/deploy?repo=https://github.com/DDSC0420/coding-portfolio and sign in with GitHub. The Dockerfile and `render.yaml` have not been tested on Render yet; if the deploy fails, paste the error into the next chat.
+2. Put the live URL into `01-live-incident-board/README.md` and `POST.md`.
+3. Record the demo (two windows side by side, press "Run drill").
+4. Post it.
 
 ## Start of next session
 
-1. Ask Kyran whether project 01's CI and deploy worked; fix anything that didn't.
+1. Ask Kyran whether project 01's deploy worked; fix anything that didn't.
 2. Build project 02, UK energy data pipeline, to "done":
    - Pull public GB grid data on a schedule (the National Grid ESO Carbon Intensity API is free and needs no key; confirm it is still available first).
    - Store it, model it in SQL, chart it on a static page that can be hosted free (GitHub Pages plus a scheduled GitHub Action is the likely shape).
