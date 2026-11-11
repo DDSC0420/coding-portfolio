@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on. Last updated: 2026-11-11, end of session 1.
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-11, end of session 1.
 
 ## Goal
 
@@ -9,45 +9,50 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 ## Rules
 
 - Repo: `DDSC0420/coding-portfolio` (public). One folder per project, named `NN-project-name`.
-- Free hosting only. No paid services.
-- "Done" means all five: live link · folder with README · tests passing in CI · 30 to 60s screen recording · LinkedIn post drafted (saved as `POST.md` in the project folder).
-- Every README has an "Honest scope" section. No production-ready claims.
-- Posts: short, one idea, always a visual, say what Claude did and what Kyran did.
-- Each project gets its own CI workflow in `.github/workflows/`, filtered to its folder.
-- At the end of every session: update this file, the status table in the root `README.md`, and push.
+- **Local only. Nothing is deployed or hosted** (Kyran's decision, 2026-11-11: hosting costs money and may not be worth it yet). Every project must run on someone's own machine from a clean clone with a couple of commands. No paid services, no required API keys.
+- "Done" means all five: runs locally from the README commands · folder with README · tests passing in CI · a screenshot in `docs/` (Kyran records video himself) · LinkedIn post drafted as `POST.md` in the project folder.
+- Every README has a "Try it" section near the top and an "Honest scope" section. No production-ready claims.
+- Posts: short, one idea, always a visual, say what Claude did and what Kyran did. Only claim what a test backs.
+- Each project gets its own CI workflow in `.github/workflows/`, filtered to its folder. Confirm it goes green before calling the project done (`gh api repos/DDSC0420/coding-portfolio/actions/runs`; GraphQL-based `gh` commands don't work in these sessions).
+- Don't wait on Kyran between projects: build, verify, push, move to the next.
+- At the end of every session: update this file and the status table in the root `README.md`, and push.
 
 ## Lineup and status
 
 | # | Project | Skill | Status |
 | --- | --- | --- | --- |
-| 01 | Live incident board | Real-time, WebSockets | Code done, 49 tests green in CI. Waiting on Kyran: deploy, recording, post |
-| 02 | UK energy data pipeline | Data engineering, SQL | **NEXT** |
-| 03 | Intake: CV to structured record | AI extraction | Planned (doubles as demo of the recruitment tool Kyran plans to sell) |
+| 01 | Live incident board | Real-time, WebSockets | **Done.** 49 tests, CI green |
+| 02 | UK grid data pipeline | Data engineering, SQL | **Done.** 60 tests, CI green, live API run verified in CI |
+| 03 | Intake: CV to structured record | AI extraction, validation | **NEXT** |
 | 04 | Terraform drift CLI | Packaging, releases | Planned |
-| 05 | Subscription SaaS starter (Stripe test mode) | Full-stack, payments | Planned |
+| 05 | Subscription SaaS starter | Full-stack, auth, payments | Planned |
 | 06 | Chrome extension | Browser platform | Planned |
 | 07 | Browser physics game | Graphics | Planned |
-| 08 | RELAY workflow engine, finished | Distributed systems | Planned (capstone; separate existing project) |
+| 08 | RELAY workflow engine, finished | Distributed systems | Planned (capstone; an existing separate project of Kyran's, so ask him where its code lives) |
 
-## Project 01: what exists
+## What exists
 
-- `01-live-incident-board/`: FastAPI + WebSockets backend, vanilla JS frontend (no build step), Dockerfile.
-- `app/rooms.py` holds the rules (pure Python); `app/main.py` is the web layer.
-- Tests: `test_rooms.py` (rules), `test_socket.py` (protocol), `test_browser.py` (two real browser tabs via Playwright).
-- Deploy: `render.yaml` at repo root, Render free tier, Docker runtime.
+- `01-live-incident-board/`: FastAPI + WebSockets, vanilla JS frontend. Rules in `app/rooms.py`, web layer in `app/main.py`. Tests in three layers including two real browser tabs (Playwright).
+- `02-uk-grid-pipeline/`: `python -m gridwatch run [--sample]`. Extract (stdlib urllib, windowed, retried) → load (DuckDB, idempotent upserts) → numbered SQL models in `sql/` → six quality checks → self-contained HTML report. `sample/` is a real API snapshot. The workflow has a manual `live` job that runs against the real API and can refresh the sample.
 
-## Open items for Kyran (project 01)
+## Patterns that worked (reuse them)
 
-1. Deploy: open https://render.com/deploy?repo=https://github.com/DDSC0420/coding-portfolio and sign in with GitHub. The Dockerfile and `render.yaml` have not been tested on Render yet; if the deploy fails, paste the error into the next chat.
-2. Put the live URL into `01-live-incident-board/README.md` and `POST.md`.
-3. Record the demo (two windows side by side, press "Run drill").
-4. Post it.
+- Keep rules in a pure module with no framework imports, and test it directly.
+- Playwright browser tests, skipped automatically when Playwright isn't installed; locally run with `PLAYWRIGHT_CHANNEL=chrome`.
+- The build sandbox can't reach most external sites. To exercise anything that needs the internet, add a `workflow_dispatch` job and trigger it with `gh api -X POST repos/DDSC0420/coding-portfolio/actions/workflows/<file>/dispatches -f ref=main`.
+- Look at the result in a browser (screenshot) before calling UI work done; save the screenshot to `docs/`.
+
+## Open items for Kyran (none block the next build)
+
+- Record a short demo for 01 (two windows side by side, press "Run drill") and post it. Draft: `01-live-incident-board/POST.md`.
+- Post 02 with `02-uk-grid-pipeline/docs/report.png`. Draft: `02-uk-grid-pipeline/POST.md`.
 
 ## Start of next session
 
-1. Ask Kyran whether project 01's deploy worked; fix anything that didn't.
-2. Build project 02, UK energy data pipeline, to "done":
-   - Pull public GB grid data on a schedule (the National Grid ESO Carbon Intensity API is free and needs no key; confirm it is still available first).
-   - Store it, model it in SQL, chart it on a static page that can be hosted free (GitHub Pages plus a scheduled GitHub Action is the likely shape).
-   - Tests for the transform logic; CI workflow; README with honest scope; `POST.md`.
-3. Update this file and push.
+Build project 03, **Intake**, to "done". It doubles as a demo of the CV-intake tool Kyran plans to sell to recruitment agencies.
+
+- Input: a CV (PDF, DOCX or text). Output: a clean, validated, structured candidate record (JSON), plus a simple local page to drop a CV on and see the result.
+- It must work with **no API key**: a deterministic rule-based extractor is the default path and the one CI tests. An LLM path (Anthropic or Groq) is optional, switched on by an environment variable, and its output goes through the same validation.
+- Show the care: schema validation (Pydantic), confidence or "needs review" flags per field, nothing invented when a field is missing.
+- Sample CVs must be invented people, clearly fictional. Never use a real person's CV.
+- Then update this file and carry straight on to 04.

@@ -52,6 +52,12 @@ def test_first_run_fetches_the_default_window_and_publishes_a_report(tmp_path):
     assert all(c["passed"] for c in data["checks"])
 
 
+def test_partial_first_and_last_days_are_kept_off_the_daily_chart(tmp_path):
+    result = go(tmp_path, FakeApi(), now=NOW + timedelta(hours=9))  # window runs 09:00 to 09:00
+    days = [row["day"] for row in report_data(result.report)["daily"]]
+    assert len(days) == 13 and days[0] == "2026-03-02" and days[-1] == "2026-03-14"
+
+
 def test_second_run_is_incremental(tmp_path):
     api = FakeApi()
     go(tmp_path, api)

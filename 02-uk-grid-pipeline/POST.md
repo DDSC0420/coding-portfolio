@@ -2,7 +2,7 @@
 
 **Attach:** `docs/report.png`, or a 30 second recording: run the command in a terminal, the five stages tick through, the report opens.
 
-**Before posting:** run it live yourself (`python -m gridwatch run --open`) and replace the two [bracketed] numbers with what your report shows.
+**Before posting:** the two numbers below are real, from the bundled snapshot (28 Oct to 11 Nov 2026). If you post much later, run it live (`python -m gridwatch run --open`) and update them.
 
 ---
 
@@ -20,9 +20,9 @@ The rest is the unglamorous part done properly:
 → Run it twice and nothing duplicates
 → Run it tomorrow and it only fetches what's new
 → A flaky API gets retried, a broken one fails loudly
-→ 58 tests, none of which need the internet
+→ 60 tests, none of which need the internet
 
-What the data said over the last two weeks: the grid averaged [N] gCO₂/kWh, and the cleanest hour of the day was [HH:00].
+What the data said for 28 Oct to 11 Nov: the grid averaged 203 gCO₂/kWh, gas supplied 46% of it, and the cleanest hour of the day was 11am.
 
 What it isn't: big data. It's a few thousand rows on a laptop, and the tools are sized for that.
 

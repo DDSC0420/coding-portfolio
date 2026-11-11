@@ -7,7 +7,7 @@ Built with heavy AI assistance (Claude). I set the brief, review the design and 
 | # | Project | Skill it shows | Status |
 | --- | --- | --- | --- |
 | 01 | [Live incident board](01-live-incident-board/) | Real-time systems, WebSockets | Done |
-| 02 | UK energy data pipeline | Data engineering, SQL | Planned |
+| 02 | [UK grid data pipeline](02-uk-grid-pipeline/) | Data engineering, SQL | Done |
 | 03 | Intake: CV to structured record | AI extraction, validation | Planned |
 | 04 | Terraform drift CLI | Packaging, releases, CI | Planned |
 | 05 | Subscription SaaS starter | Full-stack, auth, payments | Planned |
@@ -22,7 +22,7 @@ A project only counts when it has all five:
 1. Runs locally from a clean clone with the commands in its README
 2. Its own folder here with that README
 3. Tests passing in CI
-4. A short screen recording
+4. A screenshot or short recording
 5. A write-up of what it is and isn't
 
 ## Layout

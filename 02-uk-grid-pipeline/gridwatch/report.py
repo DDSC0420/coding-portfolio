@@ -17,10 +17,13 @@ PLACEHOLDER = "/*DATA*/null/*END*/"
 def build_data(con: duckdb.DuckDBPyConnection, checks: list[Check], source: str, generated_at: datetime) -> dict:
     rows = lambda sql: con.execute(sql).fetchall()  # noqa: E731
 
-    daily = [
-        {"day": str(d), "avg": a, "min": lo, "max": hi, "periods": n}
-        for d, a, lo, hi, n in rows("SELECT * FROM daily_intensity ORDER BY day")
-    ]
+    # Chart complete days only; fall back to everything if the range is too short to have one.
+    all_days = rows(
+        "SELECT day, avg_intensity, min_intensity, max_intensity, periods, is_complete "
+        "FROM daily_intensity ORDER BY day"
+    )
+    complete = [row for row in all_days if row[5]] or all_days
+    daily = [{"day": str(d), "avg": a, "min": lo, "max": hi, "periods": n} for d, a, lo, hi, n, _ in complete]
     hourly = [{"hour": h, "avg": a} for h, a, _ in rows("SELECT * FROM hourly_profile ORDER BY hour_utc")]
     mix = [{"fuel": f, "share": s} for f, s, _ in rows("SELECT * FROM fuel_mix ORDER BY avg_share DESC, fuel")]
     if not daily or not hourly:

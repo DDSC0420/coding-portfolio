@@ -55,10 +55,11 @@ Carbon Intensity API ──► extract.py ──► load.py ──► sql/*.sql 
 Source: the [Carbon Intensity API](https://carbonintensity.org.uk/) from the National Energy System Operator (NESO). Free, no key.
 
 - **Carbon intensity** is grams of CO₂ per kWh of electricity. The report uses measured ("actual") values only.
+- **The daily chart shows complete days only** (at least 44 of 48 half-hours). The first and last day of a fetch are usually partial and would give misleading averages.
 - **Zero-carbon share** here means wind, solar, nuclear and hydro. Biomass and imports are deliberately not counted.
 - All times are UTC.
 
-`sample/` holds a real snapshot of API responses so the pipeline runs with no network.
+`sample/` holds a real snapshot of API responses (28 Oct to 11 Nov 2026) so the pipeline runs with no network. The screenshot above is that sample.
 
 ## Tests
 
@@ -68,7 +69,7 @@ pytest
 PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser tests
 ```
 
-58 tests, none of which touch the network:
+60 tests, none of which touch the network:
 
 - `test_extract.py`: windowing, retry and backoff behaviour, bad responses
 - `test_load.py`: idempotency, late-arriving values, malformed records, all-or-nothing batches

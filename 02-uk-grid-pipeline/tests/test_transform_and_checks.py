@@ -38,8 +38,15 @@ def test_daily_mart_aggregates_each_day(con):
     day2 = [record(START + timedelta(days=1), 50)]
     build(con, day1 + day2, [])
     assert con.execute("SELECT * FROM daily_intensity").fetchall() == [
-        (START.date(), 200.0, 100, 300, 3),
-        ((START + timedelta(days=1)).date(), 50.0, 50, 50, 1),
+        (START.date(), 200.0, 100, 300, 3, False),
+        ((START + timedelta(days=1)).date(), 50.0, 50, 50, 1, False),
+    ]
+
+
+def test_only_days_with_nearly_all_half_hours_count_as_complete(con):
+    build(con, make_intensity(48 + 44 + 43), [])  # a full day, a day missing 4 periods, a day missing 5
+    assert [c for (c,) in con.execute("SELECT is_complete FROM daily_intensity ORDER BY day").fetchall()] == [
+        True, True, False,
     ]
 
 
