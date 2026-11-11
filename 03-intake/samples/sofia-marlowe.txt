@@ -1,0 +1,27 @@
+Sofia Marlowe
+sofia.marlowe@example.net
+github.com/sofia-marlowe-example
+
+About me
+Maths graduate looking for a first role in data analysis. Comfortable with SQL and Python, and keen to learn dbt.
+
+Education
+MSc Data Science, Merit (2025)
+University of Sheffield
+BA Mathematics, 2:1 (2024)
+Lancaster University
+
+Projects
+- Analysed 10 years of UK rail punctuality data with pandas and wrote up what drives delays
+
+Work Experience
+Data Analyst Intern, Pennine Water Trust, Jul 2024 - Sep 2024
+- Built a Power BI dashboard tracking reservoir levels across 14 sites
+- Cleaned five years of meter readings and documented every assumption
+Student Ambassador, University of Sheffield, Oct 2024 - Jun 2025
+- Ran campus tours for prospective students and their families
+
+Skills
+SQL; Python (pandas, matplotlib); Power BI; Excel; Git
+
+Fictional person, invented for testing Intake. Contact details use reserved example ranges.

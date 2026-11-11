@@ -8,7 +8,7 @@ Built with heavy AI assistance (Claude). I set the brief, review the design and 
 | --- | --- | --- | --- |
 | 01 | [Live incident board](01-live-incident-board/) | Real-time systems, WebSockets | Done |
 | 02 | [UK grid data pipeline](02-uk-grid-pipeline/) | Data engineering, SQL | Done |
-| 03 | Intake: CV to structured record | AI extraction, validation | Planned |
+| 03 | [Intake: CV to structured record](03-intake/) | AI extraction, validation | Done |
 | 04 | Terraform drift CLI | Packaging, releases, CI | Planned |
 | 05 | Subscription SaaS starter | Full-stack, auth, payments | Planned |
 | 06 | Chrome extension | Browser platform | Planned |

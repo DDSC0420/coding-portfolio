@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intake · CV to structured record</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="logo" aria-hidden="true"></span>Intake</div>
+    <p class="tagline">CV in, structured candidate record out. Runs on your machine; nothing is stored.</p>
+    <span class="engine" id="engine">Rule-based extractor</span>
+  </header>
+
+  <main>
+    <section class="pick" aria-label="Choose a CV">
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept=".pdf,.docx,.txt,.md">
+        <span class="drop-title">Drop a CV here, or <u>choose a file</u></span>
+        <span class="drop-hint">PDF, Word (.docx) or plain text, up to 5 MB</span>
+      </label>
+      <div class="samples">
+        <span class="samples-label">Or try an invented sample:</span>
+        <div class="sample-list" id="samples"></div>
+      </div>
+      <p class="error" id="error" role="alert" hidden></p>
+      <p class="loading" id="loading" hidden>Reading the CV&hellip;</p>
+    </section>
+
+    <section class="result" id="result" hidden>
+      <div class="summary">
+        <div class="who">
+          <h1 id="cand-name"></h1>
+          <p id="cand-sub"></p>
+        </div>
+        <span class="verdict" id="verdict"></span>
+        <div class="actions">
+          <button type="button" id="copy">Copy JSON</button>
+          <button type="button" id="download">Download JSON</button>
+        </div>
+      </div>
+      <div class="panes">
+        <div class="left">
+          <div id="notices"></div>
+          <div class="fields" id="fields"></div>
+        </div>
+        <aside class="source" aria-label="The CV text">
+          <div class="source-head"><h2>From the CV</h2><span id="source-meta"></span></div>
+          <pre class="cv" id="cv" tabindex="0"></pre>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">Every value is checked against the CV text. Click a field to see where it came from.</footer>
+</body>
+</html>

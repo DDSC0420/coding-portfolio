@@ -1,0 +1,23 @@
+{
+  "file": "rowan-hale.txt",
+  "as_of": "2026-11-11",
+  "name": "Rowan Hale",
+  "email": "rowan.hale@example",
+  "phone": "07700 9001",
+  "location": "Bristol",
+  "headline": null,
+  "links": [],
+  "skills": ["Team management", "complaint handling", "Salesforce", "rota planning", "coaching"],
+  "experience": [
+    ["Customer Service Manager", "Avonside Energy", "2019", null],
+    ["Operations Coordinator", "Avonside Energy", "2021", "2022"],
+    ["Contact Centre Supervisor", "Clifton Telecom", "2016-06", "2015-03"],
+    ["Call Centre Advisor", null, "2012", "2016"]
+  ],
+  "education": [
+    ["NVQ Level 3 in Customer Service", null, null],
+    ["CMI Level 5 Certificate in Management", null, 2020]
+  ],
+  "years_experience": 11.4,
+  "review": ["email", "phone", "experience[2]", "experience[3]", "years_experience"]
+}

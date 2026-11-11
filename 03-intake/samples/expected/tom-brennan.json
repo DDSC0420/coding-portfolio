@@ -1,0 +1,23 @@
+{
+  "file": "tom-brennan.docx",
+  "as_of": "2026-11-11",
+  "name": "Tom Brennan",
+  "email": "tom.brennan@example.org",
+  "phone": "+447700900456",
+  "location": "Salford, Greater Manchester",
+  "headline": "Warehouse Team Leader",
+  "links": [],
+  "skills": ["Forklift licence (counterbalance and reach)", "Stock control", "WMS (Manhattan)", "Team leadership",
+             "First aid at work", "Health and safety"],
+  "experience": [
+    ["Warehouse Team Leader", "Fernvale Distribution", "2020-01", null],
+    ["Warehouse Operative", "Fernvale Distribution", "2017-08", "2019-12"],
+    ["Retail Assistant (part-time)", "Brightmoor Supermarkets", "2015", "2017"]
+  ],
+  "education": [
+    ["Level 3 Diploma in Warehousing and Storage", "Salford City College", 2021],
+    ["GCSEs (9 including English and Maths)", "Irwell Park High School", 2015]
+  ],
+  "years_experience": 11.3,
+  "review": ["years_experience"]
+}

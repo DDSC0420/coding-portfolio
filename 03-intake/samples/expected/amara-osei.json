@@ -1,0 +1,20 @@
+{
+  "file": "amara-osei.pdf",
+  "as_of": "2026-11-11",
+  "name": "Amara Osei",
+  "email": "amara.osei@example.com",
+  "phone": "+447700900123",
+  "location": "Leeds, West Yorkshire",
+  "headline": "Senior DevOps Engineer",
+  "links": ["https://linkedin.com/in/amara-osei-example", "https://github.com/amara-osei-example"],
+  "skills": ["AWS", "GCP", "Kubernetes", "Docker", "Helm", "Terraform", "Ansible", "GitHub Actions", "Jenkins",
+             "Python", "Bash", "Go", "Prometheus", "Grafana"],
+  "experience": [
+    ["Senior DevOps Engineer", "Copperleaf Systems", "2021-03", null],
+    ["DevOps Engineer", "Kestrel Freight Ltd", "2018-06", "2021-02"],
+    ["IT Support Analyst", "Harbourline Retail", "2016-09", "2018-05"]
+  ],
+  "education": [["BSc (Hons) Computer Science, 2:1", "University of Leeds", 2016]],
+  "years_experience": 10.3,
+  "review": []
+}

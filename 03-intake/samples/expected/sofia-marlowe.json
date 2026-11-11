@@ -1,0 +1,21 @@
+{
+  "file": "sofia-marlowe.txt",
+  "as_of": "2026-11-11",
+  "name": "Sofia Marlowe",
+  "email": "sofia.marlowe@example.net",
+  "phone": null,
+  "location": null,
+  "headline": null,
+  "links": ["https://github.com/sofia-marlowe-example"],
+  "skills": ["SQL", "Python (pandas, matplotlib)", "Power BI", "Excel", "Git"],
+  "experience": [
+    ["Data Analyst Intern", "Pennine Water Trust", "2024-07", "2024-09"],
+    ["Student Ambassador", "University of Sheffield", "2024-10", "2025-06"]
+  ],
+  "education": [
+    ["MSc Data Science, Merit", "University of Sheffield", 2025],
+    ["BA Mathematics, 2:1", "Lancaster University", 2024]
+  ],
+  "years_experience": 1.0,
+  "review": []
+}
