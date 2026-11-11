@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set active = 'projects' %}
+{% block title %}Projects · Tally{% endblock %}
+{% block body %}
+<div class="head">
+  <h1>Projects</h1>
+  {% if can_export.allowed %}
+    <a class="btn ghost" href="/app/export.csv" data-testid="export">Export CSV</a>
+  {% else %}
+    <span class="locked" title="{{ can_export.reason }}">Export CSV <span class="badge plan-pro">Pro</span></span>
+  {% endif %}
+</div>
+
+{% if ctx.plan.max_projects is not none %}
+  <p class="meter" data-testid="meter"><progress value="{{ projects|length }}" max="{{ ctx.plan.max_projects }}"></progress>
+    {{ projects|length }} of {{ ctx.plan.max_projects }} projects on {{ ctx.plan.name }}</p>
+{% endif %}
+
+<ul class="list" data-testid="projects">
+  {% for p in projects %}
+  <li><span>{{ p.name }}</span> <small class="muted">{{ p.created_at|date }}</small>
+    <form method="post" action="/app/projects/{{ p.id }}/delete">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="link danger" aria-label="Delete {{ p.name }}">Delete</button>
+    </form></li>
+  {% else %}
+  <li class="muted">No projects yet.</li>
+  {% endfor %}
+</ul>
+
+{% if can_create.allowed %}
+<form method="post" action="/app/projects" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input name="name" placeholder="New project name" maxlength="80" required aria-label="New project name">
+  <button class="btn">Add project</button>
+</form>
+{% else %}
+<p class="upsell" data-testid="limit">{{ can_create.reason }}
+  {% if ctx.is_owner %}<a href="/app/billing">Upgrade to Pro</a> for unlimited projects.{% else %}Ask the workspace owner to upgrade.{% endif %}</p>
+{% endif %}
+{% endblock %}

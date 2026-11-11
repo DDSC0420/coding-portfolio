@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% set active = 'team' %}
+{% block title %}Team · Tally{% endblock %}
+{% block body %}
+<div class="head"><h1>Team</h1><span class="muted">{{ members|length + invites|length }} of {{ ctx.plan.seats }} seat{{ 's' if ctx.plan.seats > 1 }} used</span></div>
+<ul class="list" data-testid="members">
+  {% for m in members %}
+  <li><span>{{ m.email }}</span> <small class="badge">{{ m.role }}</small>
+    {% if ctx.is_owner and m.role == 'member' %}
+    <form method="post" action="/app/team/remove/{{ m.id }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Remove</button></form>
+    {% endif %}</li>
+  {% endfor %}
+  {% for i in invites %}
+  <li><span>{{ i.email }}</span> <small class="badge muted">invited</small>
+    {% if ctx.is_owner %}
+    <form method="post" action="/app/team/revoke"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="email" value="{{ i.email }}"><button class="link danger">Revoke</button></form>
+    {% endif %}</li>
+  {% endfor %}
+</ul>
+{% if not ctx.is_owner %}
+  <p class="muted">Only the owner can invite people.</p>
+{% elif can_invite.allowed %}
+<form method="post" action="/app/team/invite" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="email" name="email" placeholder="colleague@example.com" required aria-label="Email to invite">
+  <button class="btn">Send invite</button>
+</form>
+{% else %}
+<p class="upsell" data-testid="seat-limit">{{ can_invite.reason }} {% if can_invite.upgrade_to %}<a href="/app/billing">See plans</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test checkout · Tally</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body class="checkout-page">
+  <div class="testmode" role="note">TEST MODE · simulated checkout, no real payment is taken and no card details leave this machine</div>
+  <main class="checkout">
+    <section class="summary">
+      <a class="muted" href="/app/billing">← Back to Tally</a>
+      <p class="muted">Subscribe to</p>
+      <h1>Tally {{ plan.name }}</h1>
+      <p class="big">£{{ plan.price }}.00 <small class="muted">per month</small></p>
+      <p class="muted">{{ session.email }}</p>
+    </section>
+    <section class="pay">
+      <h2>Pay with a test card</h2>
+      {% if error %}<p class="error" role="alert" data-testid="checkout-error">{{ error }}</p>{% endif %}
+      <form method="post" class="stack">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <fieldset class="cards">
+          <legend class="sr">Test card</legend>
+          <label><input type="radio" name="card" value="4242 4242 4242 4242" checked> <code>4242 4242 4242 4242</code> pays now and at renewal</label>
+          <label><input type="radio" name="card" value="4000 0000 0000 0341"> <code>4000 0000 0000 0341</code> pays now, declines at renewal</label>
+          <label><input type="radio" name="card" value="4000 0000 0000 0002"> <code>4000 0000 0000 0002</code> declined</label>
+        </fieldset>
+        <button class="btn wide" data-testid="pay">Subscribe</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

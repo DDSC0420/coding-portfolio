@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="hero">
+  <h1>Projects, tallied.</h1>
+  <p class="lede">A deliberately tiny project tracker, here to be the product behind a real subscription flow: sign-up, plans, checkout, renewals, failed payments, cancellation and team seats.</p>
+  <p><a class="btn" href="{{ '/app' if ctx else '/signup' }}">{{ 'Open Tally' if ctx else 'Start free' }}</a></p>
+</section>
+<section id="pricing" class="plans">
+  {% for p in plans.values() %}
+  <article class="plan {% if p.key == 'pro' %}featured{% endif %}">
+    <h2>{{ p.name }}</h2>
+    <p class="price">£{{ p.price }}<small>/month</small></p>
+    <p class="muted">{{ p.blurb }}</p>
+    <ul class="ticks">
+      <li>{{ 'Unlimited' if p.max_projects is none else p.max_projects }} projects</li>
+      <li class="{{ '' if 'export' in p.features else 'no' }}">CSV export</li>
+      <li class="{{ '' if 'team' in p.features else 'no' }}">{{ p.seats }} seat{{ 's' if p.seats > 1 }}{% if 'team' in p.features %}, invite people{% endif %}</li>
+    </ul>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

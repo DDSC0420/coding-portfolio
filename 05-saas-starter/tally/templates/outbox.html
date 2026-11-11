@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Dev outbox · Tally{% endblock %}
+{% block body %}
+<h1>Dev outbox</h1>
+<p class="muted">Emails the app would have sent. Locally there's no mail server, so they land here.</p>
+{% for e in emails %}
+<article class="card mail">
+  <p class="muted">To <strong>{{ e.to_email }}</strong> · {{ e.created_at|datetime }}</p>
+  <h2>{{ e.subject }}</h2>
+  <pre>{{ e.body|urlize }}</pre>
+</article>
+{% else %}
+<p>No emails yet.</p>
+{% endfor %}
+{% endblock %}

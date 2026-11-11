@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Invitation · Tally{% endblock %}
+{% block width %}narrow{% endblock %}
+{% block body %}
+{% if invitation %}
+<h1>Join {{ invitation.workspace_name }}</h1>
+{% if ctx and ctx.email == invitation.email %}
+<form method="post" action="/invite/{{ token }}/accept">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <button class="btn">Join the workspace</button>
+</form>
+{% elif ctx %}
+<p class="error">This invite is for {{ invitation.email }}, but you're signed in as {{ ctx.email }}.</p>
+{% else %}
+<p>The invite is for <strong>{{ invitation.email }}</strong>.</p>
+<p><a class="btn" href="/signup?invite={{ token }}">Create an account</a> or <a href="/login?next=/invite/{{ token }}">sign in</a> to accept.</p>
+{% endif %}
+{% else %}
+<h1>This invite has expired</h1>
+<p>Ask the workspace owner to send a new one.</p>
+{% endif %}
+{% endblock %}

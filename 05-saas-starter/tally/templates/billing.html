@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set active = 'billing' %}
+{% block title %}Billing · Tally{% endblock %}
+{% block body %}
+<div class="head"><h1>Billing</h1></div>
+{% if result %}<p class="notice" role="status" data-testid="result">{{ result }}</p>{% endif %}
+
+<section class="card current" data-testid="current">
+  <div>
+    <p class="muted">Current plan</p>
+    <p class="big">{{ ctx.plan.name }} <span class="status status-{{ ctx.sub.status }}" data-testid="status">{{ ctx.sub.status if ctx.sub.status != 'none' else 'free' }}</span></p>
+  </div>
+  {% if live %}
+  <div>
+    <p class="muted">{{ 'Ends' if ctx.sub.cancel_at_period_end else 'Renews' }}</p>
+    <p class="big">{{ ctx.sub.current_period_end|date }}</p>
+  </div>
+  {% endif %}
+  {% if ctx.is_owner and live %}
+  <form method="post" action="/app/billing/{{ 'resume' if ctx.sub.cancel_at_period_end else 'cancel' }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn {{ '' if ctx.sub.cancel_at_period_end else 'ghost' }}">{{ 'Resume subscription' if ctx.sub.cancel_at_period_end else 'Cancel subscription' }}</button>
+  </form>
+  {% endif %}
+</section>
+{% if ctx.sub.cancel_at_period_end and live %}<p class="muted">Cancelled: you keep {{ ctx.plan.name }} until {{ ctx.sub.current_period_end|date }}, then move to Free.</p>{% endif %}
+
+<section class="plans compact">
+  {% for key in ['pro', 'team'] %}{% set p = plans[key] %}
+  <article class="plan {% if ctx.plan.key == key %}featured{% endif %}">
+    <h2>{{ p.name }} <span class="price">£{{ p.price }}<small>/mo</small></span></h2>
+    <p class="muted">{{ p.blurb }}</p>
+    {% if ctx.plan.key == key %}
+      <p><span class="badge plan-{{ key }}">Your plan</span></p>
+    {% elif ctx.is_owner %}
+      <form method="post" action="/app/billing/checkout">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="plan" value="{{ key }}">
+        <button class="btn" data-testid="choose-{{ key }}">{{ ('Switch to ' if live else 'Upgrade to ') ~ p.name }}</button>
+      </form>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% if not ctx.is_owner %}<p class="muted">Only the workspace owner can change the plan.</p>{% endif %}
+
+<section>
+  <h2>Webhook events</h2>
+  <p class="muted">What the billing provider told the app, and what the app did with it. Each event is applied once.</p>
+  <table class="events" data-testid="events">
+    <thead><tr><th>Received</th><th>Event</th><th>Outcome</th></tr></thead>
+    <tbody>
+    {% for e in events %}
+      <tr><td>{{ e.received_at|datetime }}</td><td><code>{{ e.type }}</code></td><td>{{ e.outcome }}</td></tr>
+    {% else %}
+      <tr><td colspan="3" class="muted">None yet. Upgrade to see them arrive.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% if dev %}
+<section class="card dev" data-testid="dev-panel">
+  <h2>Dev panel <small class="muted">only with dev mode on</small></h2>
+  <p class="muted">Clock: {{ '+%s days'|format(clock_days) if clock_days else 'real time' }}. Renewing moves the clock to the end of the period first.</p>
+  <div class="row">
+    <form method="post" action="/dev/renew"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="outcome" value="ok"><button class="btn ghost">Renew: payment succeeds</button></form>
+    <form method="post" action="/dev/renew"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="outcome" value="fail"><button class="btn ghost">Renew: payment fails</button></form>
+    <form method="post" action="/dev/replay"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn ghost">Replay last webhook</button></form>
+    <a class="btn ghost" href="/dev/outbox">Outbox</a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

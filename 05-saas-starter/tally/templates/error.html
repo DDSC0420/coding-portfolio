@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ detail }} · Tally{% endblock %}
+{% block width %}narrow{% endblock %}
+{% block body %}
+<h1>{{ 'Upgrade needed' if upgrade else "That didn't work" }}</h1>
+<p data-testid="error-detail">{{ detail }}</p>
+<p>{% if upgrade and ctx and ctx.is_owner %}<a class="btn" href="/app/billing">See plans</a> {% endif %}<a href="/app">Back to projects</a></p>
+{% endblock %}

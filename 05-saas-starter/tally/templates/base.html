@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tally{% endblock %}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ '/app' if ctx else '/' }}"><span class="logo">▦</span> Tally</a>
+    {% if ctx %}
+      <nav class="tabs" aria-label="Main">
+        <a href="/app" {% if active == 'projects' %}aria-current="page"{% endif %}>Projects</a>
+        <a href="/app/team" {% if active == 'team' %}aria-current="page"{% endif %}>Team</a>
+        <a href="/app/billing" {% if active == 'billing' %}aria-current="page"{% endif %}>Billing</a>
+      </nav>
+      <div class="who">
+        {% if ctx.workspaces|length > 1 %}
+          <details class="switcher">
+            <summary>{{ ctx.workspace.name }}</summary>
+            <div class="menu">
+              {% for w in ctx.workspaces %}
+                <form method="post" action="/app/switch/{{ w.id }}">
+                  <input type="hidden" name="csrf" value="{{ csrf }}">
+                  <button class="link" {% if w.id == ctx.workspace.id %}disabled{% endif %}>{{ w.name }} <small>{{ w.role }}</small></button>
+                </form>
+              {% endfor %}
+            </div>
+          </details>
+        {% else %}
+          <span class="ws">{{ ctx.workspace.name }}</span>
+        {% endif %}
+        <span class="badge plan-{{ ctx.plan.key }}" data-testid="plan-badge">{{ ctx.plan.name }}</span>
+        <form method="post" action="/logout">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="link">Sign out</button>
+        </form>
+      </div>
+    {% else %}
+      <nav class="tabs"><a href="/#pricing">Pricing</a></nav>
+      <div class="who"><a href="/login">Sign in</a> <a class="btn small" href="/signup">Start free</a></div>
+    {% endif %}
+  </header>
+
+  {% if ctx and ctx.sub.status == 'past_due' %}
+    <div class="banner warn" role="alert" data-testid="past-due">
+      Your last payment failed. You keep {{ ctx.plan.name }} for now while it's retried.
+      {% if ctx.is_owner %}<a href="/app/billing">Billing</a>{% endif %}
+    </div>
+  {% endif %}
+
+  <main class="{% block width %}wrap{% endblock %}">
+    {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+    {% block body %}{% endblock %}
+  </main>
+
+  <footer class="foot">
+    Tally is a demo product for a subscription SaaS starter.
+    {% if dev %}<a href="/dev/outbox">Dev outbox</a>{% endif %}
+  </footer>
+</body>
+</html>
