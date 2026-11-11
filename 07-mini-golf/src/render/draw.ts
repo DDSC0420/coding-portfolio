@@ -343,6 +343,8 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: FrameInput): void {
   for (const sp of round.world.spinners) {
     const tick = round.tick - 1 + f.alpha;
     ctx.save();
+    trace(ctx, hole.boundary); // sails pointing off the course pass behind its edge
+    ctx.clip();
     ctx.shadowColor = 'rgba(0,0,0,0.35)';
     ctx.shadowBlur = 6;
     ctx.shadowOffsetY = 4;
@@ -366,7 +368,7 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: FrameInput): void {
     ctx.fill();
   }
 
-  const holed = round.phase === 'holed' && round.ball.x === hole.cup.x && round.ball.y === hole.cup.y;
+  const holed = round.ball.x === hole.cup.x && round.ball.y === hole.cup.y; // a holed ball is parked on the cup
   const bx = f.prev.x + (round.ball.x - f.prev.x) * f.alpha;
   const by = f.prev.y + (round.ball.y - f.prev.y) * f.alpha;
 

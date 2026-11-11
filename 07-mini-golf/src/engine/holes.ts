@@ -83,9 +83,10 @@ export const HOLES: readonly HoleDef[] = [
     tee: { x: 180, y: 300 },
     cup: { x: 780, y: 300 },
     boundary: rect(100, 150, 860, 450),
-    walls: [rect(470, 150, 510, 268), rect(470, 332, 510, 450)],
-    spinners: [{ pivot: { x: 490, y: 300 }, length: 64, arms: 3, speed: 1.4, phase: 0 }],
-    solution: [{ angle: 312, power: 86, wait: 100 }, { angle: 14, power: 50 }],
+    // the mill house is the top block; its sails sweep down across the gap
+    walls: [rect(470, 150, 510, 262), rect(470, 338, 510, 450)],
+    spinners: [{ pivot: { x: 490, y: 195 }, length: 115, arms: 2, speed: 1.2, phase: 0.3 }],
+    solution: [{ angle: 0, power: 86 }],
   },
   {
     name: 'Pinball',
