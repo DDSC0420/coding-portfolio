@@ -29,7 +29,7 @@ plandrift check examples/console-changes.json --ignore '*:tags_all' --ignore 'aw
 plandrift check examples/no-drift.json; echo $?                  # 0
 ```
 
-`examples/real/` holds plan JSON from real Terraform runs (the end-to-end CI job below).
+`examples/real/` holds plan JSON from a real Terraform 1.17 run (committed by the end-to-end CI job below), and the tests check plandrift against it.
 
 ## Install it as a tool
 
@@ -141,7 +141,7 @@ Every push to this folder runs the [workflow](../.github/workflows/terraform-dri
 
 | Job | What it proves |
 | --- | --- |
-| **test** | 160 tests: action mapping, attribute diffs, sensitive and unknown handling, ignore rules, the three formats, exit codes, the CLI end to end, `plandrift run` against a fake Terraform. One test walks every example plan, collects every value marked sensitive, and checks none appears in any output format. |
+| **test** | 178 tests: action mapping, attribute diffs, sensitive and unknown handling, ignore rules, the three formats, exit codes, the CLI end to end, `plandrift run` against a fake Terraform. One test walks every example plan, collects every value marked sensitive, and checks none appears in any output format. |
 | **build** | Builds the wheel and sdist, `twine check --strict`, installs the sdist into a clean venv. |
 | **smoke** ×12 | Installs the built wheel (not the source) into a clean venv on Ubuntu, macOS and Windows × Python 3.10, 3.11, 3.12, 3.13, and checks the command: version, exit codes 0/1/2, all formats, stdin. |
 | **e2e** ×3 | Real Terraform 1.9.8, latest Terraform, and latest OpenTofu. Applies a small config ([`e2e/main.tf`](e2e/main.tf)) using free providers (local files, random, and a throwaway Consul dev server), changes things behind Terraform's back (edits a file, deletes one, flips a Consul key, adds another), then checks plandrift reports exactly that, via both `check` and `run`. The Markdown report lands in the job summary. |
