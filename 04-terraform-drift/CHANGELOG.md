@@ -13,5 +13,5 @@ First release.
 - Exit codes for CI: `0` nothing found, `2` found, `1` error. `--fail-on any|drift|never` chooses what counts.
 - `--ignore ADDRESS` and `--ignore ADDRESS:ATTRIBUTE` rules with `*` and `?` wildcards.
 - `plandrift run` makes the plan itself (`terraform plan -refresh-only`, or `--full-plan`), with `--terraform-bin tofu` for OpenTofu.
-- A composite GitHub Action (`DDSC0420/coding-portfolio/04-terraform-drift@drift-v0.1.0`) that writes the report to the job summary and sets outputs.
+- A composite GitHub Action (`DDSC0420/coding-portfolio/04-terraform-drift`) that writes the report to the job summary and sets outputs.
 - No runtime dependencies. Python 3.10 to 3.13 on Linux, macOS and Windows.

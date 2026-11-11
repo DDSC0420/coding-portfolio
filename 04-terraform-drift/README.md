@@ -33,14 +33,14 @@ plandrift check examples/no-drift.json; echo $?                  # 0
 
 ## Install it as a tool
 
-From a release wheel (no clone needed):
+Straight from GitHub, no clone needed:
 
 ```bash
-pipx install https://github.com/DDSC0420/coding-portfolio/releases/download/drift-v0.1.0/plandrift-0.1.0-py3-none-any.whl
-# or: pip install <same URL>
+pipx install "git+https://github.com/DDSC0420/coding-portfolio#subdirectory=04-terraform-drift"
+# or: pip install "git+https://github.com/DDSC0420/coding-portfolio#subdirectory=04-terraform-drift"
 ```
 
-It isn't on PyPI (yet). Every release lists its wheel and sdist on the [Releases page](https://github.com/DDSC0420/coding-portfolio/releases).
+Releases put a ready-built wheel and sdist on the [Releases page](https://github.com/DDSC0420/coding-portfolio/releases) (tags `drift-vX.Y.Z`), installable with `pipx install <wheel URL>`. It isn't on PyPI.
 
 ## Use it on your Terraform
 
@@ -84,7 +84,7 @@ jobs:
         with: { terraform_wrapper: false }
       - run: terraform init -input=false && terraform plan -refresh-only -out=plan.out && terraform show -json plan.out > plan.json
         # (plus your cloud credentials)
-      - uses: DDSC0420/coding-portfolio/04-terraform-drift@drift-v0.1.0
+      - uses: DDSC0420/coding-portfolio/04-terraform-drift@main   # or pin a release tag
         with:
           plan: plan.json
           fail-on: drift
@@ -147,7 +147,7 @@ Every push to this folder runs the [workflow](../.github/workflows/terraform-dri
 | **e2e** ×3 | Real Terraform 1.9.8, latest Terraform, and latest OpenTofu. Applies a small config ([`e2e/main.tf`](e2e/main.tf)) using free providers (local files, random, and a throwaway Consul dev server), changes things behind Terraform's back (edits a file, deletes one, flips a Consul key, adds another), then checks plandrift reports exactly that, via both `check` and `run`. The Markdown report lands in the job summary. |
 | **action** ×3 | Runs the composite Action on Ubuntu, macOS and Windows and checks its outputs, and that drift fails the step when it should. |
 
-Releases: pushing a tag `drift-vX.Y.Z` runs the [release workflow](../.github/workflows/terraform-drift-release.yml). It refuses a tag that doesn't match the package version or has no changelog entry, runs the tests, builds, creates a GitHub Release with the wheel and sdist, then installs from the release URL on all three OSes. See [CHANGELOG.md](CHANGELOG.md).
+Releases: the [release workflow](../.github/workflows/terraform-drift-release.yml) runs on a pushed `drift-vX.Y.Z` tag, or from the Actions tab ("Run workflow" tags `main` with the package version). It refuses a version with no changelog entry, a tag that doesn't match the package, or a version that's already released. Then it runs the tests, builds, creates a GitHub Release with the wheel and sdist, and installs from the release URL on all three OSes. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Honest scope
 

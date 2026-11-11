@@ -1,5 +1,7 @@
 # LinkedIn post: project 4
 
+**Before posting:** the release line below is only true once the first release has run (open item in the handover: Actions → terraform-drift-release → Run workflow, then check it's green). If you post before that, drop that line.
+
 **Attach:** `docs/terminal.png`. Optional second image: the Markdown report on a CI run page (Actions → terraform-drift → any "e2e" job → Summary), which is exactly what a PR comment looks like.
 
 ---
@@ -13,7 +15,7 @@ plandrift reads a Terraform plan and says in plain terms what was changed outsid
 In the picture: SSH opened to the whole internet "temporarily", a tag changed, a server deleted, a database scaled up. Exit code 2, so a nightly CI job goes red and someone looks.
 
 The real point of this one: a proper tool, not a script.
-→ pip install from a GitHub Release, zero dependencies
+→ pip install straight from GitHub, zero dependencies
 → Tested from the built package on Linux, macOS and Windows, Python 3.10 to 3.13: 12 combinations
 → Push a version tag and CI tests, builds and publishes the release, then installs it back from the release on all three systems
 → Works as a GitHub Action that puts the report on the run page

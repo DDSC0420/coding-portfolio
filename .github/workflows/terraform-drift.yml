@@ -52,6 +52,11 @@ jobs:
           python -m venv /tmp/sdist-venv
           /tmp/sdist-venv/bin/pip install dist/*.tar.gz
           /tmp/sdist-venv/bin/plandrift --version
+      - name: pip install straight from this commit on GitHub, as the README says
+        run: |
+          python -m venv /tmp/git-venv
+          /tmp/git-venv/bin/pip install "git+https://github.com/$GITHUB_REPOSITORY@$GITHUB_SHA#subdirectory=04-terraform-drift"
+          /tmp/git-venv/bin/plandrift --version
       - uses: actions/upload-artifact@v4
         with:
           name: dist
