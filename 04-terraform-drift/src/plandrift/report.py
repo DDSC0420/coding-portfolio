@@ -110,7 +110,8 @@ def build_report(plan: Plan, rules: list[IgnoreRule] | tuple[IgnoreRule, ...] = 
     ignored: list[str] = []
     drift = _apply(plan.drift, rules, ignored)
     changes = _apply(plan.changes, rules, ignored)
-    return Report(plan, drift, changes, tuple(ignored))
+    # The same attribute is often ignored in both sections; list it once.
+    return Report(plan, drift, changes, tuple(dict.fromkeys(ignored)))
 
 
 def _apply(items: tuple[Change, ...], rules, ignored: list[str]) -> tuple[Change, ...]:

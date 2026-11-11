@@ -67,6 +67,12 @@ def test_ignoring_some_attributes_keeps_the_rest():
     assert "aws_s3_bucket.logs:tags_all.Owner" in report.ignored
 
 
+def test_an_attribute_ignored_in_both_sections_is_listed_once():
+    plan = parse_plan(example("drift-and-changes.json"))
+    report = build_report(plan, [parse_rule("*:tags_all")])
+    assert report.ignored == ("aws_s3_bucket.logs:tags_all.Owner",)
+
+
 def test_an_update_whose_every_difference_is_ignored_drops_out():
     plan = parse_plan(example("console-changes.json"))
     report = build_report(plan, [parse_rule("aws_s3_bucket.logs:tags*")])

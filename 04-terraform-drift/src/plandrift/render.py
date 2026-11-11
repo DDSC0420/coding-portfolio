@@ -101,14 +101,18 @@ def _table_attrs(change: Change, paint) -> list[str]:
     width = min(max(len(a.name) for a in attrs), 40)
     out = []
     for a in attrs:
-        before = paint(show_value(a.before), "2" if a.sensitive else "31")
-        after = paint(show_value(a.after), "2" if a.sensitive else "32")
+        before = paint(show_value(a.before), "2" if a.sensitive or _placeholder(a.before) else "31")
+        after = paint(show_value(a.after), "2" if a.sensitive or _placeholder(a.after) else "32")
         tail = paint("  forces replacement", "35") if a.forces_replacement else ""
         out.append(f"        {a.name:<{width}}  {before} -> {after}{tail}")
     hidden = len(change.attributes) - len(attrs)
     if hidden:
         out.append(paint(f"        ... and {hidden} more (--format json shows all)", "2"))
     return out
+
+
+def _placeholder(value: Any) -> bool:
+    return value is ABSENT or value is UNKNOWN
 
 
 # --- markdown ---------------------------------------------------------------------------

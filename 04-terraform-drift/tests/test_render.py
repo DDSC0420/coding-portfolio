@@ -166,7 +166,7 @@ def test_json_document():
     assert doc["summary"] == {
         "drift": 4,
         "changes": 8,
-        "ignored": 2,
+        "ignored": 1,  # tags_all.Owner, ignored in both sections, counted once
         "exit_code": 2,
         "headline": "Drift found: 4 changed outside Terraform, 8 pending changes.",
     }
