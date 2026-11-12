@@ -2,7 +2,12 @@ import pytest
 
 from relay.engine.errors import UnknownWorkflow
 from relay.engine.submission import canonical_hash
-from relay.workflows.registry import Registry, StepDefinition, WorkflowDefinition
+from relay.workflows.registry import (
+    Registry,
+    StepDefinition,
+    WorkflowDefinition,
+    default_registry,
+)
 
 
 def _noop(ctx):
@@ -30,3 +35,10 @@ def test_a_published_version_cannot_be_replaced() -> None:
     registry.register(WorkflowDefinition("t", 1, (StepDefinition("a", _noop),)))
     with pytest.raises(ValueError):
         registry.register(WorkflowDefinition("t", 1, (StepDefinition("b", _noop),)))
+
+
+def test_a_step_cannot_be_defined_with_a_budget_one_crash_would_exhaust() -> None:
+    with pytest.raises(ValueError, match="at least 2"):
+        StepDefinition("fragile", lambda ctx: {}, max_attempts=1)
+    for definition in default_registry().definitions():
+        assert all(s.max_attempts >= 2 for s in definition.steps)

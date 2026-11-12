@@ -78,3 +78,24 @@ jobs:
           name: relay-ui-results
           path: 08-relay/web/test-results/
           if-no-files-found: ignore
+
+  compose-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: Start the whole stack in Docker (2 databases, API, CRM, 2 workers, dashboard)
+        run: docker compose -f compose.yaml -f compose.demo.yaml up -d --build --wait
+      - name: The dashboard is served and reaches the API through nginx
+        run: |
+          curl -fsS http://127.0.0.1:8080/ | grep -q "RELAY operations"
+          curl -fsS http://127.0.0.1:8080/api/overview | grep -q '"lease_seconds":8'
+      - name: "Demo: unreliable CRM, kill worker-a mid-batch with docker compose kill, approvals, then verify both databases"
+        run: uv run python scripts/demo.py
+      - name: Benchmark (small; also checks nothing was lost or doubled)
+        run: uv run python scripts/benchmark.py --workflows 200 --workers 1 2
+      - name: Logs
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.demo.yaml logs --tail 200

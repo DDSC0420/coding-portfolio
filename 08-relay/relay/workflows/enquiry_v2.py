@@ -18,7 +18,8 @@ DEFINITION = WorkflowDefinition(
     ),
     steps=(
         StepDefinition("extract", extract.run, max_attempts=3),
-        StepDefinition("validate", validate.run, max_attempts=1),
+        # A validation failure is permanent and never retried; the budget of 3 is for crashes.
+        StepDefinition("validate", validate.run, max_attempts=3),
         StepDefinition("enrich", enrich.run, max_attempts=3),
         StepDefinition("approval", approval.run, max_attempts=3),
         StepDefinition("crm_upsert", crm_upsert.run, max_attempts=6, external_effect=True),

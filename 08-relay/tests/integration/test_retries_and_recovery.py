@@ -282,7 +282,12 @@ def test_recovery_of_an_exhausted_local_step_fails_the_workflow(engine, registry
     run_id = _submit(engine, registry)
     complete_step(engine, _claim(engine), {"enquiry": {}})
     validate = _claim(engine)
-    assert (validate.name, validate.max_attempts) == ("validate", 1)
+    assert validate.name == "validate"
+    with engine.begin() as conn:  # as if this were its last allowed attempt
+        conn.execute(
+            text("UPDATE step_runs SET max_attempts = attempt_count WHERE id = :id"),
+            {"id": validate.step_id},
+        )
     expire_lease(engine, validate.step_id)
     [r] = recover_expired_leases(engine, swept_by="sweeper")
     assert r.new_status == "failed"

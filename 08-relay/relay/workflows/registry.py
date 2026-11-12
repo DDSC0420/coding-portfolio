@@ -43,6 +43,16 @@ class StepDefinition:
     # classified as ambiguous rather than transient.
     external_effect: bool = False
 
+    def __post_init__(self) -> None:
+        # Every claim uses one attempt, including a claim whose worker then dies. With a
+        # budget of 1, a crash at the wrong moment would fail a perfectly good workflow.
+        # "Do not retry this error" is said by raising PermanentStepError, not by the budget.
+        if self.max_attempts < 2:
+            raise ValueError(
+                f"step {self.name!r}: max_attempts must be at least 2 so one worker crash "
+                "cannot fail the workflow"
+            )
+
 
 @dataclass(frozen=True)
 class WorkflowDefinition:

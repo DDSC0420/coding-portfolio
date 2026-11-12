@@ -219,3 +219,18 @@ def test_a_step_slower_than_the_lease_keeps_its_lease_by_renewal(cluster: Cluste
     enrich = cluster.step(run_id, "enrich")
     assert [a["outcome"] for a in cluster.attempts(enrich["id"])] == ["succeeded"]
     assert cluster.events(run_id, "step.lease_expired") == []
+
+
+@pytest.mark.parametrize("step", ["extract", "validate", "enrich", "crm_upsert"])
+def test_a_crash_on_any_step_never_fails_a_valid_workflow(cluster: Cluster, step: str) -> None:
+    """Found by the dashboard: `validate` once had a retry budget of 1, so a worker dying
+    while holding it failed a valid enquiry. Every step must survive one crash."""
+    cluster.start_crm()
+    [run_id] = cluster.submit(prefix=f"ANY-{step.upper()}")
+    worker_a = cluster.start_worker("worker-a", failpoints=f"after_claim@{step}=exit")
+    assert worker_a.wait_exit() == 137
+    cluster.start_worker("worker-b")
+    assert cluster.wait_terminal([run_id]) == {"succeeded": 1}
+    outcomes = [a["outcome"] for a in cluster.attempts(cluster.step(run_id, step)["id"])]
+    assert outcomes == ["lease_expired", "succeeded"]
+    assert cluster.crm_mutations() == {"total": 1, "duplicate_keys": 0}
