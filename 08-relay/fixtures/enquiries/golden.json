@@ -1,0 +1,752 @@
+[
+  {
+    "enquiry_ref": "GOLD-001",
+    "name": "Kwame Turner",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £18,000.\n\nName: Kwame Turner\nCompany: Kestrel Robotics\nEmail: kwame.turner.001@kestrel-robotics.example"
+  },
+  {
+    "enquiry_ref": "GOLD-002",
+    "name": "Nadia Okafor",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £45,000.",
+    "company": "Quayside Events",
+    "email": "nadia.okafor.002@quayside-events.example"
+  },
+  {
+    "enquiry_ref": "GOLD-003",
+    "name": "Tom Doyle",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £18,000.",
+    "company": "Thornbury Schools Trust",
+    "email": "tom.doyle.003@thornbury-trust.example"
+  },
+  {
+    "enquiry_ref": "GOLD-004",
+    "name": "Hannah Chen",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £7,500.",
+    "company": "Willowbrook Care Homes",
+    "email": "hannah.chen.004@willowbrookcare.example"
+  },
+  {
+    "enquiry_ref": "GOLD-005",
+    "name": "George Evans",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £4,000.\n\nName: George Evans\nCompany: Beacon Street Bakery\nEmail: george.evans.005@beaconbakery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-006",
+    "name": "Aisha Rossi",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £12,000.",
+    "company": "Ember Fitness Studios",
+    "email": "aisha.rossi.006@emberfitness.example"
+  },
+  {
+    "enquiry_ref": "GOLD-007",
+    "name": "Ravi Price",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £45,000.",
+    "company": "Hartwell Dental Group",
+    "email": "ravi.price.007@hartwelldental.example"
+  },
+  {
+    "enquiry_ref": "GOLD-008",
+    "name": "Imani Clarke",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £7,500.",
+    "company": "Oakmere Housing Association",
+    "email": "imani.clarke.008@oakmere-housing.example"
+  },
+  {
+    "enquiry_ref": "GOLD-009",
+    "name": "Callum Singh",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £25k.\n\nName: Callum Singh\nCompany: Redfern Legal LLP\nEmail: callum.singh.009@redfernlegal.example"
+  },
+  {
+    "enquiry_ref": "GOLD-010",
+    "name": "Elena Novak",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £32,000.",
+    "company": "Millbank Joinery",
+    "email": "elena.novak.010@millbank-joinery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-011",
+    "name": "Owen Hughes",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £45,000.",
+    "company": "Yardley Motor Services",
+    "email": "owen.hughes.011@yardleymotors.example"
+  },
+  {
+    "enquiry_ref": "GOLD-012",
+    "name": "Mei Ahmed",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £45,000.",
+    "company": "Cobalt Freight Forwarding",
+    "email": "mei.ahmed.012@cobaltfreight.example"
+  },
+  {
+    "enquiry_ref": "GOLD-013",
+    "name": "Jack Reid",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £45,000.\n\nName: Jack Reid\nCompany: Fenwick Water Services\nEmail: jack.reid.013@fenwickwater.example"
+  },
+  {
+    "enquiry_ref": "GOLD-014",
+    "name": "Chloe Kowalski",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £12,000.",
+    "company": "Brindle & Co Accountants",
+    "email": "chloe.kowalski.014@brindleco.example"
+  },
+  {
+    "enquiry_ref": "GOLD-015",
+    "name": "Oliver Patel",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £18,000.",
+    "company": "Pellow Farm Supplies",
+    "email": "oliver.patel.015@pellowfarm.example"
+  },
+  {
+    "enquiry_ref": "GOLD-016",
+    "name": "Zara Bello",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £18,000.",
+    "company": "Saltmarsh Analytics",
+    "email": "zara.bello.016@saltmarsh.example"
+  },
+  {
+    "enquiry_ref": "GOLD-017",
+    "name": "Arjun Mensah",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £32,000.\n\nName: Arjun Mensah\nCompany: Vantage Print Works\nEmail: arjun.mensah.017@vantageprint.example"
+  },
+  {
+    "enquiry_ref": "GOLD-018",
+    "name": "Sofia Moreau",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £4,000.",
+    "company": "Ashdown Energy Consulting",
+    "email": "sofia.moreau.018@ashdown-energy.example"
+  },
+  {
+    "enquiry_ref": "GOLD-019",
+    "name": "Liam Iyer",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £32,000.",
+    "company": "Drayton Architecture",
+    "email": "liam.iyer.019@drayton-arch.example"
+  },
+  {
+    "enquiry_ref": "GOLD-020",
+    "name": "Priya Shah",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £40k.",
+    "company": "Larkspur Studio",
+    "email": "priya.shah.020@larkspur.example"
+  },
+  {
+    "enquiry_ref": "GOLD-021",
+    "name": "Kwame Turner",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £4,000.\n\nName: Kwame Turner\nCompany: Kestrel Robotics\nEmail: kwame.turner.021@kestrel-robotics.example"
+  },
+  {
+    "enquiry_ref": "GOLD-022",
+    "name": "Nadia Okafor",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £45,000.",
+    "company": "Quayside Events",
+    "email": "nadia.okafor.022@quayside-events.example"
+  },
+  {
+    "enquiry_ref": "GOLD-023",
+    "name": "Tom Doyle",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £25,000.",
+    "company": "Thornbury Schools Trust",
+    "email": "tom.doyle.023@thornbury-trust.example"
+  },
+  {
+    "enquiry_ref": "GOLD-024",
+    "name": "Hannah Chen",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £40,000.",
+    "company": "Willowbrook Care Homes",
+    "email": "hannah.chen.024@willowbrookcare.example"
+  },
+  {
+    "enquiry_ref": "GOLD-025",
+    "name": "George Evans",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £7,500.\n\nName: George Evans\nCompany: Beacon Street Bakery\nEmail: george.evans.025@beaconbakery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-026",
+    "name": "Aisha Rossi",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £32,000.",
+    "company": "Ember Fitness Studios",
+    "email": "aisha.rossi.026@emberfitness.example"
+  },
+  {
+    "enquiry_ref": "GOLD-027",
+    "name": "Ravi Price",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £12,000.",
+    "company": "Hartwell Dental Group",
+    "email": "ravi.price.027@hartwelldental.example"
+  },
+  {
+    "enquiry_ref": "GOLD-028",
+    "name": "Imani Clarke",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £4,000.",
+    "company": "Oakmere Housing Association",
+    "email": "imani.clarke.028@oakmere-housing.example"
+  },
+  {
+    "enquiry_ref": "GOLD-029",
+    "name": "Callum Singh",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £25,000.\n\nName: Callum Singh\nCompany: Redfern Legal LLP\nEmail: callum.singh.029@redfernlegal.example"
+  },
+  {
+    "enquiry_ref": "GOLD-030",
+    "name": "Elena Novak",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £32k.",
+    "company": "Millbank Joinery",
+    "email": "elena.novak.030@millbank-joinery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-031",
+    "name": "Owen Hughes",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £7,500.",
+    "company": "Yardley Motor Services",
+    "email": "owen.hughes.031@yardleymotors.example"
+  },
+  {
+    "enquiry_ref": "GOLD-032",
+    "name": "Mei Ahmed",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £32,000.",
+    "company": "Cobalt Freight Forwarding",
+    "email": "mei.ahmed.032@cobaltfreight.example"
+  },
+  {
+    "enquiry_ref": "GOLD-033",
+    "name": "Jack Reid",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £40k.\n\nName: Jack Reid\nCompany: Fenwick Water Services\nEmail: jack.reid.033@fenwickwater.example"
+  },
+  {
+    "enquiry_ref": "GOLD-034",
+    "name": "Chloe Kowalski",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £45k.",
+    "company": "Brindle & Co Accountants",
+    "email": "chloe.kowalski.034@brindleco.example"
+  },
+  {
+    "enquiry_ref": "GOLD-035",
+    "name": "Oliver Patel",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £7,500.",
+    "company": "Pellow Farm Supplies",
+    "email": "oliver.patel.035@pellowfarm.example"
+  },
+  {
+    "enquiry_ref": "GOLD-036",
+    "name": "Zara Bello",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £18,000.",
+    "company": "Saltmarsh Analytics",
+    "email": "zara.bello.036@saltmarsh.example"
+  },
+  {
+    "enquiry_ref": "GOLD-037",
+    "name": "Arjun Mensah",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £7,500.\n\nName: Arjun Mensah\nCompany: Vantage Print Works\nEmail: arjun.mensah.037@vantageprint.example"
+  },
+  {
+    "enquiry_ref": "GOLD-038",
+    "name": "Sofia Moreau",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £7,500.",
+    "company": "Ashdown Energy Consulting",
+    "email": "sofia.moreau.038@ashdown-energy.example"
+  },
+  {
+    "enquiry_ref": "GOLD-039",
+    "name": "Liam Iyer",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £40,000.",
+    "company": "Drayton Architecture",
+    "email": "liam.iyer.039@drayton-arch.example"
+  },
+  {
+    "enquiry_ref": "GOLD-040",
+    "name": "Priya Shah",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £25,000.",
+    "company": "Larkspur Studio",
+    "email": "priya.shah.040@larkspur.example"
+  },
+  {
+    "enquiry_ref": "GOLD-041",
+    "name": "Kwame Turner",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £40,000.\n\nName: Kwame Turner\nCompany: Kestrel Robotics\nEmail: kwame.turner.041@kestrel-robotics.example"
+  },
+  {
+    "enquiry_ref": "GOLD-042",
+    "name": "Nadia Okafor",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £25,000.",
+    "company": "Quayside Events",
+    "email": "nadia.okafor.042@quayside-events.example"
+  },
+  {
+    "enquiry_ref": "GOLD-043",
+    "name": "Tom Doyle",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £18,000.",
+    "company": "Thornbury Schools Trust",
+    "email": "tom.doyle.043@thornbury-trust.example"
+  },
+  {
+    "enquiry_ref": "GOLD-044",
+    "name": "Hannah Chen",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £18,000.",
+    "company": "Willowbrook Care Homes",
+    "email": "hannah.chen.044@willowbrookcare.example"
+  },
+  {
+    "enquiry_ref": "GOLD-045",
+    "name": "George Evans",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £45,000.\n\nName: George Evans\nCompany: Beacon Street Bakery\nEmail: george.evans.045@beaconbakery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-046",
+    "name": "Aisha Rossi",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £4,000.",
+    "company": "Ember Fitness Studios",
+    "email": "aisha.rossi.046@emberfitness.example"
+  },
+  {
+    "enquiry_ref": "GOLD-047",
+    "name": "Ravi Price",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £7,500.",
+    "company": "Hartwell Dental Group",
+    "email": "ravi.price.047@hartwelldental.example"
+  },
+  {
+    "enquiry_ref": "GOLD-048",
+    "name": "Imani Clarke",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £4,000.",
+    "company": "Oakmere Housing Association",
+    "email": "imani.clarke.048@oakmere-housing.example"
+  },
+  {
+    "enquiry_ref": "GOLD-049",
+    "name": "Callum Singh",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £25k.\n\nName: Callum Singh\nCompany: Redfern Legal LLP\nEmail: callum.singh.049@redfernlegal.example"
+  },
+  {
+    "enquiry_ref": "GOLD-050",
+    "name": "Elena Novak",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £12k.",
+    "company": "Millbank Joinery",
+    "email": "elena.novak.050@millbank-joinery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-051",
+    "name": "Owen Hughes",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £25,000.",
+    "company": "Yardley Motor Services",
+    "email": "owen.hughes.051@yardleymotors.example"
+  },
+  {
+    "enquiry_ref": "GOLD-052",
+    "name": "Mei Ahmed",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £12k.",
+    "company": "Cobalt Freight Forwarding",
+    "email": "mei.ahmed.052@cobaltfreight.example"
+  },
+  {
+    "enquiry_ref": "GOLD-053",
+    "name": "Jack Reid",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £25,000.\n\nName: Jack Reid\nCompany: Fenwick Water Services\nEmail: jack.reid.053@fenwickwater.example"
+  },
+  {
+    "enquiry_ref": "GOLD-054",
+    "name": "Chloe Kowalski",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £4k.",
+    "company": "Brindle & Co Accountants",
+    "email": "chloe.kowalski.054@brindleco.example"
+  },
+  {
+    "enquiry_ref": "GOLD-055",
+    "name": "Oliver Patel",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £45,000.",
+    "company": "Pellow Farm Supplies",
+    "email": "oliver.patel.055@pellowfarm.example"
+  },
+  {
+    "enquiry_ref": "GOLD-056",
+    "name": "Zara Bello",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £25,000.",
+    "company": "Saltmarsh Analytics",
+    "email": "zara.bello.056@saltmarsh.example"
+  },
+  {
+    "enquiry_ref": "GOLD-057",
+    "name": "Arjun Mensah",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £12,000.\n\nName: Arjun Mensah\nCompany: Vantage Print Works\nEmail: arjun.mensah.057@vantageprint.example"
+  },
+  {
+    "enquiry_ref": "GOLD-058",
+    "name": "Sofia Moreau",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £45,000.",
+    "company": "Ashdown Energy Consulting",
+    "email": "sofia.moreau.058@ashdown-energy.example"
+  },
+  {
+    "enquiry_ref": "GOLD-059",
+    "name": "Liam Iyer",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £25k.",
+    "company": "Drayton Architecture",
+    "email": "liam.iyer.059@drayton-arch.example"
+  },
+  {
+    "enquiry_ref": "GOLD-060",
+    "name": "Priya Shah",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £25,000.",
+    "company": "Larkspur Studio",
+    "email": "priya.shah.060@larkspur.example"
+  },
+  {
+    "enquiry_ref": "GOLD-061",
+    "name": "Kwame Turner",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £40k.\n\nName: Kwame Turner\nCompany: Kestrel Robotics\nEmail: kwame.turner.061@kestrel-robotics.example"
+  },
+  {
+    "enquiry_ref": "GOLD-062",
+    "name": "Nadia Okafor",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £4k.",
+    "company": "Quayside Events",
+    "email": "nadia.okafor.062@quayside-events.example"
+  },
+  {
+    "enquiry_ref": "GOLD-063",
+    "name": "Tom Doyle",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £32k.",
+    "company": "Thornbury Schools Trust",
+    "email": "tom.doyle.063@thornbury-trust.example"
+  },
+  {
+    "enquiry_ref": "GOLD-064",
+    "name": "Hannah Chen",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £25,000.",
+    "company": "Willowbrook Care Homes",
+    "email": "hannah.chen.064@willowbrookcare.example"
+  },
+  {
+    "enquiry_ref": "GOLD-065",
+    "name": "George Evans",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £45,000.\n\nName: George Evans\nCompany: Beacon Street Bakery\nEmail: george.evans.065@beaconbakery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-066",
+    "name": "Aisha Rossi",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £18,000.",
+    "company": "Ember Fitness Studios",
+    "email": "aisha.rossi.066@emberfitness.example"
+  },
+  {
+    "enquiry_ref": "GOLD-067",
+    "name": "Ravi Price",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £18k.",
+    "company": "Hartwell Dental Group",
+    "email": "ravi.price.067@hartwelldental.example"
+  },
+  {
+    "enquiry_ref": "GOLD-068",
+    "name": "Imani Clarke",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £32,000.",
+    "company": "Oakmere Housing Association",
+    "email": "imani.clarke.068@oakmere-housing.example"
+  },
+  {
+    "enquiry_ref": "GOLD-069",
+    "name": "Callum Singh",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £32,000.\n\nName: Callum Singh\nCompany: Redfern Legal LLP\nEmail: callum.singh.069@redfernlegal.example"
+  },
+  {
+    "enquiry_ref": "GOLD-070",
+    "name": "Elena Novak",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £18k.",
+    "company": "Millbank Joinery",
+    "email": "elena.novak.070@millbank-joinery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-071",
+    "name": "Owen Hughes",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £18,000.",
+    "company": "Yardley Motor Services",
+    "email": "owen.hughes.071@yardleymotors.example"
+  },
+  {
+    "enquiry_ref": "GOLD-072",
+    "name": "Mei Ahmed",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £45k.",
+    "company": "Cobalt Freight Forwarding",
+    "email": "mei.ahmed.072@cobaltfreight.example"
+  },
+  {
+    "enquiry_ref": "GOLD-073",
+    "name": "Jack Reid",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £18,000.\n\nName: Jack Reid\nCompany: Fenwick Water Services\nEmail: jack.reid.073@fenwickwater.example"
+  },
+  {
+    "enquiry_ref": "GOLD-074",
+    "name": "Chloe Kowalski",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £7,500.",
+    "company": "Brindle & Co Accountants",
+    "email": "chloe.kowalski.074@brindleco.example"
+  },
+  {
+    "enquiry_ref": "GOLD-075",
+    "name": "Oliver Patel",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £12,000.",
+    "company": "Pellow Farm Supplies",
+    "email": "oliver.patel.075@pellowfarm.example"
+  },
+  {
+    "enquiry_ref": "GOLD-076",
+    "name": "Zara Bello",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £45,000.",
+    "company": "Saltmarsh Analytics",
+    "email": "zara.bello.076@saltmarsh.example"
+  },
+  {
+    "enquiry_ref": "GOLD-077",
+    "name": "Arjun Mensah",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £7,500.\n\nName: Arjun Mensah\nCompany: Vantage Print Works\nEmail: arjun.mensah.077@vantageprint.example"
+  },
+  {
+    "enquiry_ref": "GOLD-078",
+    "name": "Sofia Moreau",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £32k.",
+    "company": "Ashdown Energy Consulting",
+    "email": "sofia.moreau.078@ashdown-energy.example"
+  },
+  {
+    "enquiry_ref": "GOLD-079",
+    "name": "Liam Iyer",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £18,000.",
+    "company": "Drayton Architecture",
+    "email": "liam.iyer.079@drayton-arch.example"
+  },
+  {
+    "enquiry_ref": "GOLD-080",
+    "name": "Priya Shah",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £7,500.",
+    "company": "Larkspur Studio",
+    "email": "priya.shah.080@larkspur.example"
+  },
+  {
+    "enquiry_ref": "GOLD-081",
+    "name": "Kwame Turner",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £12,000.\n\nName: Kwame Turner\nCompany: Kestrel Robotics\nEmail: kwame.turner.081@kestrel-robotics.example"
+  },
+  {
+    "enquiry_ref": "GOLD-082",
+    "name": "Nadia Okafor",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £18,000.",
+    "company": "Quayside Events",
+    "email": "nadia.okafor.082@quayside-events.example"
+  },
+  {
+    "enquiry_ref": "GOLD-083",
+    "name": "Tom Doyle",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £45,000.",
+    "company": "Thornbury Schools Trust",
+    "email": "tom.doyle.083@thornbury-trust.example"
+  },
+  {
+    "enquiry_ref": "GOLD-084",
+    "name": "Hannah Chen",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £4k.",
+    "company": "Willowbrook Care Homes",
+    "email": "hannah.chen.084@willowbrookcare.example"
+  },
+  {
+    "enquiry_ref": "GOLD-085",
+    "name": "George Evans",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £4k.\n\nName: George Evans\nCompany: Beacon Street Bakery\nEmail: george.evans.085@beaconbakery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-086",
+    "name": "Aisha Rossi",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £32,000.",
+    "company": "Ember Fitness Studios",
+    "email": "aisha.rossi.086@emberfitness.example"
+  },
+  {
+    "enquiry_ref": "GOLD-087",
+    "name": "Ravi Price",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £25,000.",
+    "company": "Hartwell Dental Group",
+    "email": "ravi.price.087@hartwelldental.example"
+  },
+  {
+    "enquiry_ref": "GOLD-088",
+    "name": "Imani Clarke",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £4,000.",
+    "company": "Oakmere Housing Association",
+    "email": "imani.clarke.088@oakmere-housing.example"
+  },
+  {
+    "enquiry_ref": "GOLD-089",
+    "name": "Callum Singh",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £4,000.\n\nName: Callum Singh\nCompany: Redfern Legal LLP\nEmail: callum.singh.089@redfernlegal.example"
+  },
+  {
+    "enquiry_ref": "GOLD-090",
+    "name": "Elena Novak",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £12,000.",
+    "company": "Millbank Joinery",
+    "email": "elena.novak.090@millbank-joinery.example"
+  },
+  {
+    "enquiry_ref": "GOLD-091",
+    "name": "Owen Hughes",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £4k.",
+    "company": "Yardley Motor Services",
+    "email": "owen.hughes.091@yardleymotors.example"
+  },
+  {
+    "enquiry_ref": "GOLD-092",
+    "name": "Mei Ahmed",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £32,000.",
+    "company": "Cobalt Freight Forwarding",
+    "email": "mei.ahmed.092@cobaltfreight.example"
+  },
+  {
+    "enquiry_ref": "GOLD-093",
+    "name": "Jack Reid",
+    "source": "email",
+    "message": "Hello, we'd like help to set up automated invoice reminders for overdue accounts. Our budget is around £45,000.\n\nName: Jack Reid\nCompany: Fenwick Water Services\nEmail: jack.reid.093@fenwickwater.example"
+  },
+  {
+    "enquiry_ref": "GOLD-094",
+    "name": "Chloe Kowalski",
+    "source": "referral",
+    "message": "Hello, we'd like help to connect our e-commerce orders to the dispatch team's tracking sheet. Our budget is around £4k.",
+    "company": "Brindle & Co Accountants",
+    "email": "chloe.kowalski.094@brindleco.example"
+  },
+  {
+    "enquiry_ref": "GOLD-095",
+    "name": "Oliver Patel",
+    "source": "event",
+    "message": "Hello, we'd like help to produce monthly compliance reports from our case management data. Our budget is around £18k.",
+    "company": "Pellow Farm Supplies",
+    "email": "oliver.patel.095@pellowfarm.example"
+  },
+  {
+    "enquiry_ref": "GOLD-096",
+    "name": "Zara Bello",
+    "source": "web_form",
+    "message": "Hello, we'd like help to automate our weekly stock reconciliation between the warehouse system and our accounts. Our budget is around £45,000.",
+    "company": "Saltmarsh Analytics",
+    "email": "zara.bello.096@saltmarsh.example"
+  },
+  {
+    "enquiry_ref": "GOLD-097",
+    "name": "Arjun Mensah",
+    "source": "email",
+    "message": "Hello, we'd like help to replace a spreadsheet-based booking process with a small web app. Our budget is around £32,000.\n\nName: Arjun Mensah\nCompany: Vantage Print Works\nEmail: arjun.mensah.097@vantageprint.example"
+  },
+  {
+    "enquiry_ref": "GOLD-098",
+    "name": "Sofia Moreau",
+    "source": "referral",
+    "message": "Hello, we'd like help to integrate our CRM with the support inbox so enquiries are logged automatically. Our budget is around £4k.",
+    "company": "Ashdown Energy Consulting",
+    "email": "sofia.moreau.098@ashdown-energy.example"
+  },
+  {
+    "enquiry_ref": "GOLD-099",
+    "name": "Liam Iyer",
+    "source": "event",
+    "message": "Hello, we'd like help to build a dashboard showing delivery performance by region. Our budget is around £45k.",
+    "company": "Drayton Architecture",
+    "email": "liam.iyer.099@drayton-arch.example"
+  },
+  {
+    "enquiry_ref": "GOLD-100",
+    "name": "Priya Shah",
+    "source": "web_form",
+    "message": "Hello, we'd like help to migrate a legacy Access database to PostgreSQL. Our budget is around £45,000.",
+    "company": "Larkspur Studio",
+    "email": "priya.shah.100@larkspur.example"
+  }
+]

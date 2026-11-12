@@ -1,0 +1,22 @@
+[
+  {"id": "co-001", "name": "Northwind Logistics Ltd", "domain": "northwind-logistics.example", "industry": "Logistics", "employees": "201-500", "region": "West Midlands", "account_tier": "growth"},
+  {"id": "co-002", "name": "Hartwell Dental Group", "domain": "hartwelldental.example", "industry": "Healthcare", "employees": "51-200", "region": "Yorkshire", "account_tier": "standard"},
+  {"id": "co-003", "name": "Brindle & Co Accountants", "domain": "brindleco.example", "industry": "Professional services", "employees": "11-50", "region": "London", "account_tier": "standard"},
+  {"id": "co-004", "name": "Kestrel Robotics", "domain": "kestrel-robotics.example", "industry": "Manufacturing", "employees": "51-200", "region": "Coventry", "account_tier": "growth"},
+  {"id": "co-005", "name": "Oakmere Housing Association", "domain": "oakmere-housing.example", "industry": "Housing", "employees": "501-1000", "region": "North West", "account_tier": "strategic"},
+  {"id": "co-006", "name": "Pellow Farm Supplies", "domain": "pellowfarm.example", "industry": "Agriculture", "employees": "11-50", "region": "Cornwall", "account_tier": "standard"},
+  {"id": "co-007", "name": "Quayside Events", "domain": "quayside-events.example", "industry": "Hospitality", "employees": "11-50", "region": "Bristol", "account_tier": "standard"},
+  {"id": "co-008", "name": "Redfern Legal LLP", "domain": "redfernlegal.example", "industry": "Legal", "employees": "51-200", "region": "Manchester", "account_tier": "growth"},
+  {"id": "co-009", "name": "Saltmarsh Analytics", "domain": "saltmarsh.example", "industry": "Software", "employees": "11-50", "region": "Edinburgh", "account_tier": "growth"},
+  {"id": "co-010", "name": "Thornbury Schools Trust", "domain": "thornbury-trust.example", "industry": "Education", "employees": "201-500", "region": "Gloucestershire", "account_tier": "strategic"},
+  {"id": "co-011", "name": "Upland Outdoor Gear", "domain": "upland-gear.example", "industry": "Retail", "employees": "51-200", "region": "Cumbria", "account_tier": "standard"},
+  {"id": "co-012", "name": "Vantage Print Works", "domain": "vantageprint.example", "industry": "Manufacturing", "employees": "11-50", "region": "Leicester", "account_tier": "standard"},
+  {"id": "co-013", "name": "Willowbrook Care Homes", "domain": "willowbrookcare.example", "industry": "Healthcare", "employees": "201-500", "region": "Kent", "account_tier": "growth"},
+  {"id": "co-014", "name": "Yardley Motor Services", "domain": "yardleymotors.example", "industry": "Automotive", "employees": "11-50", "region": "Birmingham", "account_tier": "standard"},
+  {"id": "co-015", "name": "Ashdown Energy Consulting", "domain": "ashdown-energy.example", "industry": "Energy", "employees": "11-50", "region": "Sussex", "account_tier": "growth"},
+  {"id": "co-016", "name": "Beacon Street Bakery", "domain": "beaconbakery.example", "industry": "Food and drink", "employees": "1-10", "region": "Leeds", "account_tier": "standard"},
+  {"id": "co-017", "name": "Cobalt Freight Forwarding", "domain": "cobaltfreight.example", "industry": "Logistics", "employees": "51-200", "region": "Felixstowe", "account_tier": "growth"},
+  {"id": "co-018", "name": "Drayton Architecture", "domain": "drayton-arch.example", "industry": "Professional services", "employees": "11-50", "region": "Oxford", "account_tier": "standard"},
+  {"id": "co-019", "name": "Ember Fitness Studios", "domain": "emberfitness.example", "industry": "Leisure", "employees": "11-50", "region": "Cardiff", "account_tier": "standard"},
+  {"id": "co-020", "name": "Fenwick Water Services", "domain": "fenwickwater.example", "industry": "Utilities", "employees": "501-1000", "region": "Lincolnshire", "account_tier": "strategic"}
+]

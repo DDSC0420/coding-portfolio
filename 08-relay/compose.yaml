@@ -1,0 +1,119 @@
+# RELAY local environment. Every published port binds to 127.0.0.1 only.
+#
+#   docker compose up -d --build        start everything (runs migrations first)
+#   docker compose ps                   status
+#   docker compose kill worker-a        crash a worker (SIGKILL, no cleanup)
+#   docker compose start worker-a       bring it back
+#   docker compose stop                 stop, KEEPING all data
+#   docker compose down -v              DESTRUCTIVE: removes containers AND database volumes
+
+name: relay
+
+x-python: &python
+  build: .
+  image: relay-python:dev
+  init: true
+
+x-engine-env: &engine-env
+  RELAY_DATABASE_URL: postgresql+psycopg://relay:${ENGINE_DB_PASSWORD:-relay}@engine-db:5432/relay_engine
+  RELAY_CRM_BASE_URL: http://crm:8100
+  RELAY_LEASE_SECONDS: ${RELAY_LEASE_SECONDS:-15}
+
+x-crm-env: &crm-env
+  CRM_DATABASE_URL: postgresql+psycopg://relay:${CRM_DB_PASSWORD:-relay}@crm-db:5432/relay_crm
+
+x-healthcheck: &http-health
+  interval: 3s
+  timeout: 3s
+  retries: 20
+
+services:
+  engine-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: relay
+      POSTGRES_PASSWORD: ${ENGINE_DB_PASSWORD:-relay}
+      POSTGRES_DB: relay_engine
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: [engine-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U relay -d relay_engine"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  crm-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: relay
+      POSTGRES_PASSWORD: ${CRM_DB_PASSWORD:-relay}
+      POSTGRES_DB: relay_crm
+    ports: ["127.0.0.1:55433:5432"]
+    volumes: [crm-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U relay -d relay_crm"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    <<: *python
+    command: ["sh", "-c", "alembic -n engine upgrade head && alembic -n crm upgrade head"]
+    environment:
+      <<: [*engine-env, *crm-env]
+    depends_on:
+      engine-db: {condition: service_healthy}
+      crm-db: {condition: service_healthy}
+    restart: "no"
+
+  api:
+    <<: *python
+    command: ["uvicorn", "services.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment: *engine-env
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      <<: *http-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health/ready')"]
+
+  crm:
+    <<: *python
+    command: ["uvicorn", "services.demo_crm.app:app", "--host", "0.0.0.0", "--port", "8100"]
+    environment: *crm-env
+    ports: ["127.0.0.1:8100:8100"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    healthcheck:
+      <<: *http-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8100/health/ready')"]
+
+  # Two separately addressable workers. restart: "no" so a killed worker stays
+  # down until you start it again; that is the demo.
+  worker-a:
+    <<: *python
+    command: ["python", "-m", "services.worker"]
+    environment:
+      <<: *engine-env
+      RELAY_WORKER_NAME: worker-a
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      crm: {condition: service_healthy}
+    stop_grace_period: 30s
+    restart: "no"
+
+  worker-b:
+    <<: *python
+    command: ["python", "-m", "services.worker"]
+    environment:
+      <<: *engine-env
+      RELAY_WORKER_NAME: worker-b
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      crm: {condition: service_healthy}
+    stop_grace_period: 30s
+    restart: "no"
+
+volumes:
+  engine-data:
+  crm-data:

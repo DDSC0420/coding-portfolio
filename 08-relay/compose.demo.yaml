@@ -1,0 +1,21 @@
+# Demo overrides. Use only for a local demo:
+#
+#   docker compose -f compose.yaml -f compose.demo.yaml up -d
+#
+# - Enables the demo CRM's fault controls (/demo/faults). Without this file
+#   those endpoints do not exist.
+# - Shortens leases so a killed worker's steps are recovered in ~10 s instead
+#   of ~17 s, which is easier to watch in a recording.
+
+x-demo-worker: &demo-worker
+  RELAY_LEASE_SECONDS: "8"
+  RELAY_RECOVERY_INTERVAL_SECONDS: "1"
+
+services:
+  crm:
+    environment:
+      CRM_DEMO_MODE: "true"
+  worker-a:
+    environment: *demo-worker
+  worker-b:
+    environment: *demo-worker
