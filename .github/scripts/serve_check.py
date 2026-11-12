@@ -13,6 +13,8 @@ import sys
 import time
 import urllib.request
 
+# Server logs carry characters like Vite's arrow, which Windows' default code page can't print.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 url, text, sep, *command = sys.argv[1:]
 assert sep == "--" and command, __doc__
 windows = os.name == "nt"
