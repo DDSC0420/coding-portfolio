@@ -345,3 +345,14 @@ def test_concurrent_recovery_sweeps_recover_each_step_exactly_once(engine, regis
     assert (
         fetch_one(engine, "SELECT count(*) AS n FROM step_runs WHERE status = 'ready'")["n"] == 30
     )
+
+
+def test_renewing_a_step_this_worker_just_finished_is_not_a_stale_write(engine, registry) -> None:
+    """The renewal thread can lose a race with its own worker's completion. Nothing is wrong,
+    so nothing is logged as refused (the dashboard counts those events)."""
+    run_id = _submit(engine, registry)
+    claimed = _claim(engine)
+    complete_step(engine, claimed, {"enquiry": {}})
+    with pytest.raises(LeaseLost, match="already finished"):
+        renew_lease(engine, claimed, lease_seconds=120)
+    assert "step.stale_write_rejected" not in event_types(engine, run_id)

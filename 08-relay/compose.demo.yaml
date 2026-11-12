@@ -12,6 +12,10 @@ x-demo-worker: &demo-worker
   RELAY_RECOVERY_INTERVAL_SECONDS: "1"
 
 services:
+  api:
+    environment:
+      RELAY_LEASE_SECONDS: "8"  # the dashboard draws lease bars against this
+      RELAY_WORKER_OFFLINE_AFTER_SECONDS: "5"
   crm:
     environment:
       CRM_DEMO_MODE: "true"

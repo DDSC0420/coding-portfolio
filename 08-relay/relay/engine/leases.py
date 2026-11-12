@@ -91,5 +91,18 @@ def renew_lease(engine: Engine, step: ClaimedStep, lease_seconds: float) -> date
             {**fence_params(step), "lease_seconds": lease_seconds},
         ).first()
     if row is None:
+        # The renewal thread can lose a race with this same worker finishing the step:
+        # the attempt for our generation is already closed by us. That is not a stale
+        # write, so it is not recorded as one.
+        with engine.connect() as conn:
+            outcome = conn.execute(
+                text(
+                    "SELECT outcome FROM step_attempts "
+                    "WHERE step_run_id = :id AND lease_generation = :gen"
+                ),
+                {"id": step.step_id, "gen": step.lease_generation},
+            ).scalar_one_or_none()
+        if outcome in ("succeeded", "failed", "paused_for_approval"):
+            raise LeaseLost(f"step {step.step_id} was already finished by {step.worker_id}")
         raise reject_stale_write(engine, step, "renew")
     return row.lease_expires_at

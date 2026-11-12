@@ -39,3 +39,42 @@ jobs:
       - run: uv run ruff format --check .
       - name: Tests (real PostgreSQL; crash tests kill and freeze real worker processes)
         run: uv run pytest
+
+  dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: relay
+          POSTGRES_PASSWORD: relay
+          POSTGRES_DB: relay_engine
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U relay" --health-interval 2s
+          --health-timeout 3s --health-retries 30
+    env:
+      RELAY_TEST_ADMIN_URL: postgresql+psycopg://relay:relay@127.0.0.1:55432/postgres
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: 08-relay/web/package-lock.json
+      - run: uv sync --frozen
+      - run: npm ci
+        working-directory: 08-relay/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: 08-relay/web
+      - name: UI tests (real API, CRM and two workers; one worker is killed mid-batch)
+        run: npm test
+        working-directory: 08-relay/web
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: relay-ui-results
+          path: 08-relay/web/test-results/
+          if-no-files-found: ignore

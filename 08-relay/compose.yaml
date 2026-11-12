@@ -88,6 +88,14 @@ services:
       <<: *http-health
       test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8100/health/ready')"]
 
+  # The operations dashboard: static files behind nginx, which also forwards /api to the API.
+  web:
+    build: ./web
+    image: relay-web:dev
+    ports: ["127.0.0.1:8080:80"]
+    depends_on:
+      api: {condition: service_healthy}
+
   # Two separately addressable workers. restart: "no" so a killed worker stays
   # down until you start it again; that is the demo.
   worker-a:

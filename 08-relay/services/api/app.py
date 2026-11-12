@@ -140,7 +140,8 @@ def list_workflows(
     status: str | None = None,
     batch_id: str | None = None,
     q: Annotated[
-        str | None, Query(max_length=100, description="Search ref, email, company")
+        str | None,
+        Query(max_length=100, description="Search reference, name, email, company or message text"),
     ] = None,
     sort: Literal["created_desc", "created_asc", "updated_desc"] = "created_desc",
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
@@ -157,7 +158,8 @@ def list_workflows(
         pattern = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
         where.append(
             "(w.input->>'enquiry_ref' ILIKE :q OR w.input->>'email' ILIKE :q "
-            "OR w.input->>'company' ILIKE :q OR w.id::text LIKE :q)"
+            "OR w.input->>'company' ILIKE :q OR w.input->>'name' ILIKE :q "
+            "OR w.input->>'message' ILIKE :q OR w.id::text LIKE :q)"
         )
         params["q"] = pattern
     order = {
