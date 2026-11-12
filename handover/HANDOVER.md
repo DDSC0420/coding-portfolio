@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 5. **All eight projects are done.** What's left is Kyran's: posting, and the open items below.
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 6. **All eight projects are done and audited.** What's left: posting (see Posting status) and the open items below.
 
 ## Goal
 
@@ -24,7 +24,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 | 01 | Live incident board | Real-time, WebSockets | **Done.** 49 tests, CI green |
 | 02 | UK grid data pipeline | Data engineering, SQL | **Done.** 60 tests, CI green, live API run verified in CI |
 | 03 | Intake: CV to structured record | AI extraction, validation | **Done.** 126 tests, CI green, scorecard 44/44 |
-| 04 | plandrift: Terraform drift CLI | Packaging, releases | **Done.** 178 tests, all 20 CI jobs green (12-cell OS × Python wheel matrix, real Terraform 1.9.8 / 1.17.1 / OpenTofu e2e, Action on 3 OSes). First release waits on Kyran's click (open items) |
+| 04 | plandrift: Terraform drift CLI | Packaging, releases | **Done.** 178 tests, all 20 CI jobs green (12-cell OS × Python wheel matrix, real Terraform 1.9.8 / 1.17.1 / OpenTofu e2e, Action on 3 OSes). First release waits on Kyran's click (open items). MIT licensed |
 | 05 | Tally: subscription SaaS starter | Full-stack, auth, payments | **Done.** 131 tests (52 rules, 78 app, 1 browser journey), CI green |
 | 06 | Margin: highlights that stay put (Chrome extension) | Browser platform | **Done.** 71 tests (53 unit, 18-step real-Chrome run), CI green |
 | 07 | Pocket Links: mini golf | Graphics, game loop, physics | **Done.** 58 tests (53 unit, 5 browser) + strict typecheck, CI green |
@@ -66,29 +66,29 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 - Playwright: a hidden element still has its old text, so wait for the panel to be visible before asserting on it and before pressing Enter.
 - **Look at the thing, not only the tests (08):** a dashboard screenshot showed a valid workflow marked failed because a worker died holding a step with a retry budget of 1. 224 tests were green. Screenshots of real runs are a test.
 - Reaching Kyran's PC: `device_request_folder_access` was refused by the auto-mode classifier; Kyran adding the folder himself (**Add folder** in the desktop app) worked at once. To copy a repo out: `tar czf` inside the connected folder (git bundle needs lock files it can't delete), then `device_stage_files`.
+- On Windows, Python writes piped or redirected output in the legacy code page (cp1252): any non-ASCII character (Vite's arrow, a name in a CV) crashes `print`. Reconfigure stdout to UTF-8 where output is data, and name `encoding="utf-8"` on every `read_text`/`write_text`.
+- The Claude-side safety check blocks creating public releases (`terraform-drift-release` dispatch was refused): Kyran runs it.
 - GitHub runners resolve `localhost` to IPv6: `vite preview` needs `--host 127.0.0.1` when Playwright polls `127.0.0.1`.
 - Node 22.18+ runs `.ts` files directly (type stripping) if imports use `.ts` extensions (`allowImportingTsExtensions` + `verbatimModuleSyntax` in tsconfig).
 
 ## Open items for Kyran
 
+Session 6 (2026-11-12) audited everything from a fresh clone before posting: all eight suites pass, ruff and codespell clean, no secrets, pip-audit and npm audit clean, every relative link resolves. Fixed on the way: MIT licence everywhere (root `LICENSE`, 04's `pyproject.toml` with PEP 639 metadata, 06 and 07 `package.json`); 03's Groq default model (`llama-3.3-70b-versatile` was retired on 2026-08-16, now `openai/gpt-oss-120b`); the Python browser tests now skip with the fix instead of erroring when Playwright's browser isn't downloaded (still fail on CI); 04's Action example was missing `id: drift`; 01's CI now builds the Docker image and checks it serves the board. New workflow `readme-check.yml` runs every project's "Try it" steps on Windows, macOS and Linux (21 jobs, green); Windows found PowerShell-vs-bash and code-page bugs, now fixed (intake prints UTF-8 JSON, file reads name UTF-8).
+
+- **LinkedIn posts:** see "Posting status" below.
+- **Cut the first plandrift release yourself:** GitHub → Actions → terraform-drift-release → Run workflow (branch main). Claude's side blocks creating public releases, so it can't. Check all four jobs go green; the Release `drift-v0.1.0` should have the wheel and sdist. Post 04 was written without the release line; once the release exists, the line "→ Push a version tag and CI tests, builds and publishes the release, then installs it back from the release on all three systems" is true and can go in a comment or edit.
+- **Commit authorship:** every commit in the repo is authored by "Claude", so GitHub shows Claude as the only contributor and you as none. Changing that means rewriting history and force-pushing; decide whether you want it. Going forward, commits you make yourself carry your name.
 - **Run RELAY's finished version on your PC once** (Stages 3 to 5 have only run in the sandbox and in CI): `git pull` in coding-portfolio, then in `08-relay`: `docker compose -f compose.yaml -f compose.demo.yaml up -d --build`, open http://127.0.0.1:8080, and `uv run python scripts/demo.py`. If the old stack from `C:\Users\kyran\relay` is still up, `docker compose down` there first (same ports).
 - **Read `08-relay/docs/interview-guide.md`.** It's the questions RELAY should let you answer in an interview, with short answers and where to point in the code.
-- Post 08 with a recording of the kill (dashboard beside a terminal running `docker compose kill worker-a`), or `08-relay/docs/img/live.png`. Draft: `08-relay/POST.md`. It ends with a "looking for roles" line; cut it if you'd rather not.
-- Your original `C:\Users\kyran\relay` folder is unchanged apart from one new file, `Claude outputs\relay-full.tgz` (the copy I took). Safe to delete that file. The portfolio's `08-relay/` is now the up-to-date RELAY; decide whether to keep or archive the old folder.
-- `08-relay/LICENSE` is MIT (from your original repo); the rest of the portfolio still has no licence (see below).
-- Post 07 with `07-mini-golf/docs/play.png` (or a short recording of the windmill and island holes). Draft: `07-mini-golf/POST.md`. Worth playing a round yourself first: the hole difficulty was tuned by me and a script, not by a person.
-- Post 06 with `06-chrome-extension/docs/popup.png` (or record the "Try it" steps). Draft: `06-chrome-extension/POST.md`. To try it: `chrome://extensions` → Developer mode → Load unpacked → `06-chrome-extension/extension`.
-- Chrome Web Store for Margin: only if you want it (one-off developer fee and your Google account). CI already builds the zip a submission needs.
-- **Cut the first plandrift release:** GitHub → Actions → terraform-drift-release → Run workflow (branch main). It tags `drift-v0.1.0`, attaches the wheel and sdist to a Release, and installs it back on Linux/macOS/Windows; check all four jobs go green. (The session's proxy blocks tag pushes.) After that the README's Releases link has something in it, and `POST.md`'s release line is true.
-- Post 05 with `05-saas-starter/docs/billing.png` (or record the "Try it" steps). Draft: `05-saas-starter/POST.md`.
-- Post 04 with `04-terraform-drift/docs/terminal.png`. Draft: `04-terraform-drift/POST.md`. Optional second image: an e2e job's Summary page on GitHub, which shows the Markdown (PR-comment) report.
-- **Pick a licence for the repo** (none yet, so legally nobody may reuse the code). MIT is the usual choice for a portfolio; it matters most for 04 (a tool and a GitHub Action) and 06 (an extension). Add `LICENSE` at the root and `license = "MIT"` in `04-terraform-drift/pyproject.toml`; the `package.json` files in 06 and 07 say `UNLICENSED` until then.
-- PyPI for plandrift: only if you want it. Needs your PyPI account; Trusted Publishing from the release workflow would be the way. The name `plandrift` was free on 2026-11-11.
-- Done 2026-11-12: all workflows bumped to the Node 24 action majors (checkout v6, setup-node v6, setup-python v6, upload-artifact v6, download-artifact v7). `terraform-drift-release.yml` only runs when you click it, so its bump is unproven until the first release run.
-- Record a short demo for 01 (two windows side by side, press "Run drill") and post it. Draft: `01-live-incident-board/POST.md`.
-- Post 02 with `02-uk-grid-pipeline/docs/report.png`. Draft: `02-uk-grid-pipeline/POST.md`.
-- Post 03 with `03-intake/docs/review.png`. Draft: `03-intake/POST.md`; it has an optional line mentioning the agency product, your call.
-- 03's LLM mode has only been tested against a fake API. Worth one local run with your own key: `INTAKE_LLM=anthropic ANTHROPIC_API_KEY=... python -m intake eval`. If the default model name is retired, set `INTAKE_LLM_MODEL`.
+- Your original `C:\Users\kyran\relay` folder is unchanged apart from one new file, `Claude outputs\relay-full.tgz` (the copy I took). Safe to delete that file. Decide whether to keep or archive the old folder.
+- Play a round of 07 yourself: the hole difficulty was tuned by me and a script, not by a person.
+- 03's LLM mode has only been tested against a fake API. Worth one local run with your own key: `INTAKE_LLM=anthropic ANTHROPIC_API_KEY=... python -m intake eval` (or `INTAKE_LLM=groq`).
+- Only if you want them: Chrome Web Store for Margin (one-off developer fee; CI already builds the zip), PyPI for plandrift (Trusted Publishing from the release workflow; the name was free on 2026-11-11).
+- Demo recordings would beat the screenshots for 01, 07 and 08, if you make them later.
+
+### Posting status
+
+Posting pack (all eight posts, image paths, schedule): https://claude.ai/artifact/GHjkXJuto9jfUX1oKUE1ch. Plan agreed 2026-11-12: post 01 now, schedule 02 to 08 in LinkedIn's own scheduler on Tuesday and Thursday mornings (17, 19, 24, 26 Nov, 1, 3, 8 Dec). Post 03 without the agency line; post 08 keeps the "looking for roles" paragraph. Status: waiting on Kyran to sign in to LinkedIn in the desktop app's browser pane.
 
 ## Start of next session
 
@@ -96,5 +96,5 @@ The series is built: there is no next project. Useful things a future session co
 
 - Help record or script the demo videos, or tighten any `POST.md` before it goes out.
 - Act on feedback from posts (a bug someone finds, a question worth answering in a README).
-- The open items above that need a decision first: a repo licence, the plandrift release, Chrome Web Store, PyPI.
+- The open items above that need a decision first: the plandrift release, commit authorship, Chrome Web Store, PyPI.
 - RELAY extensions listed at the end of `08-relay/docs/interview-guide.md` (authentication, operator retry, `LISTEN/NOTIFY`, parallel steps).
