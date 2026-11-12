@@ -19,7 +19,7 @@ Use the engine PostgreSQL database as the queue. Eligible steps are rows with
 - Polling costs a cheap indexed query every poll interval per worker slot.
   Fine at demo scale; at much higher scale, `LISTEN/NOTIFY` wake-ups or a
   broker would be worth revisiting.
-- Throughput is bounded by database write capacity. Benchmarked in Stage 5.
+- Throughput is bounded by database write capacity. Measured by `scripts/benchmark.py`; see the README.
 
 ## Rejected alternatives
 - **Redis/RabbitMQ:** a second system whose acknowledgements must be

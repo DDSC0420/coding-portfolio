@@ -2,7 +2,7 @@
 
 The default provider is deterministic rule-based parsing of the synthetic
 fixture text. It is labelled as such in its output and involves no AI. An
-optional real AI provider (Stage 3+) would have to return output that passes
+optional real AI provider (not built) would have to return output that passes
 `ExtractedEnquiry` validation before it is accepted, and the accepted output is
 persisted like any step output, so a completed extraction is never repeated.
 """

@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 5 (06 and 07 done; 08 exists on Kyran's PC and needs bringing in).
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 5. **All eight projects are done.** What's left is Kyran's: posting, and the open items below.
 
 ## Goal
 
@@ -28,7 +28,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 | 05 | Tally: subscription SaaS starter | Full-stack, auth, payments | **Done.** 131 tests (52 rules, 78 app, 1 browser journey), CI green |
 | 06 | Margin: highlights that stay put (Chrome extension) | Browser platform | **Done.** 71 tests (53 unit, 18-step real-Chrome run), CI green |
 | 07 | Pocket Links: mini golf | Graphics, game loop, physics | **Done.** 58 tests (53 unit, 5 browser) + strict typecheck, CI green |
-| 08 | RELAY workflow engine, finished | Distributed systems | **NEXT, blocked on access:** the code is on Kyran's PC at `C:\Users\kyran\relay` (Stages 0 to 4 built, Stage 5 in progress); this repo can't see it yet (plan below) |
+| 08 | RELAY: a workflow engine you can kill mid-step | Distributed systems | **Done.** 229 tests (224 Python on real PostgreSQL, 5 browser), plus the Docker Compose demo in CI (kills a worker with `docker compose kill`, then verifies both databases). CI green |
 
 ## What exists
 
@@ -41,6 +41,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 - `06-chrome-extension/`: Manifest V3, plain JS, no build step; `extension/` is the folder you Load unpacked. `lib/anchor.js` (classic script that sets `globalThis.MarginAnchor`, since content scripts can't be ES modules; tests import it for the global) is pure: W3C TextQuoteSelector (exact + 32 chars context) + position hint, in whitespace-normalised text; re-anchor exact → fuzzy (Sellers approximate search, ≤25% edits; quotes over 64 chars matched by first/last 32 then verified) → context (prefix/suffix intact, gap ≥60% similar); quotes under 20 chars need context agreement. `content.js` builds a text index of the page, draws with the CSS Custom Highlight API (no DOM changes), retries lost highlights on mutations for 15 s. `background.js` owns all writes (`lib/store.js`, queued), takes the page from `sender.url`, only extension pages may delete, pushes changes to tabs (tab→page map in `storage.session`), sets `chrome.storage.local.setAccessLevel('TRUSTED_CONTEXTS')`. Permissions: `activeTab contextMenus storage scripting` + per-site `optional_host_permissions` → `registerContentScripts`. Shortcuts Alt+Shift+H (save) and Alt+Shift+M (`_execute_action`). Popup and `library/` page (search, Markdown export, sites list). Tests: `node --test` unit; `test/browser/` harness drives headed Chrome under Xvfb (see patterns). `npm run zip` → `dist/margin-0.1.0.zip` (CI artifact).
 - `07-mini-golf/`: Vite 8 + TypeScript 7 (strict, `.ts` import extensions) + Vitest 5 + Playwright 1.65; `npm install && npm run dev`. `src/engine/` is pure and deterministic: `physics.ts` (240 Hz fixed step, speed cap below one radius per step so no tunnelling, surfaces, cup lip, bumpers, spinners with moving-segment bounces), `game.ts` (Round state machine, water penalty, 7-stroke limit, snapshot/restore, `playShots`), `holes.ts` (nine holes as data with `solution` shots). `scripts/solve.ts` (run with plain `node`, type stripping) beam-searches solutions; unit tests replay them (every hole in par). `src/render/draw.ts` canvas (static layer cached per hole), `loop.ts` fixed-step accumulator with interpolation, `audio.ts` Web Audio. Browser tests play the production build: a whole round with keyboard and mouse to the scorecard. Dev only: `?hole=N`.
+- `08-relay/`: Python 3.12+, FastAPI, SQLAlchemy core SQL, PostgreSQL (two databases: engine and demo CRM), `uv`, Docker Compose; dashboard in `web/` (React, TypeScript, Vite, plain CSS). Stages 0 to 2 came from Kyran's own repo at `C:\Users\kyran\relay` (left untouched there, three commits); Stages 3 to 5 were built here. Engine in `relay/engine/`: `claims.py` (T2, `SKIP LOCKED`), `leases.py` (the fence, renewal), `transitions.py` (T4/T5, `schedule_successor`), `recovery.py` (T6), `approvals.py` (T4a pause with no lease, T7 decision), `retries.py`. Workflows `enquiry` v1 (4 steps) and v2 (adds `approval`). `relay/verify.py`: twelve invariant checks across both databases. `services/api/ops.py`: overview, metrics, events, approvals, batches, CRM fault pass-through. `scripts/`: `demo.py` (Compose or `--local`), `verify.py`, `benchmark.py`, `run_local.py` (stack without Docker; the UI tests use it). Design docs in `docs/` (architecture, guarantees, ADRs, interview guide, implementation-status). CI `relay.yml` has three jobs: test, dashboard, compose-demo. Local test database in the sandbox: `/usr/lib/postgresql/16/bin`, `initdb` + `pg_ctl` on port 55432 as user `claude`, `RELAY_TEST_ADMIN_URL=postgresql+psycopg://relay@127.0.0.1:55432/postgres`.
 
 ## Patterns that worked (reuse them)
 
@@ -63,11 +64,18 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 - **Deterministic simulation + solver + replay (07):** keep the sim free of clocks, DOM and randomness; a search script finds inputs that reach the goal; tests replay them, and the browser test replays them too (same result = same engine). The solver doubles as a level-design check (it showed two holes were trivial).
 - Play-test before calling a game done: 07's first windmill was technically solvable but humanly near impossible (hub in the middle of the gap); a quick "random timing" pass-rate script made the tuning objective.
 - Playwright: a hidden element still has its old text, so wait for the panel to be visible before asserting on it and before pressing Enter.
+- **Look at the thing, not only the tests (08):** a dashboard screenshot showed a valid workflow marked failed because a worker died holding a step with a retry budget of 1. 224 tests were green. Screenshots of real runs are a test.
+- Reaching Kyran's PC: `device_request_folder_access` was refused by the auto-mode classifier; Kyran adding the folder himself (**Add folder** in the desktop app) worked at once. To copy a repo out: `tar czf` inside the connected folder (git bundle needs lock files it can't delete), then `device_stage_files`.
+- GitHub runners resolve `localhost` to IPv6: `vite preview` needs `--host 127.0.0.1` when Playwright polls `127.0.0.1`.
 - Node 22.18+ runs `.ts` files directly (type stripping) if imports use `.ts` extensions (`allowImportingTsExtensions` + `verbatimModuleSyntax` in tsconfig).
 
-## Open items for Kyran (none block the next build except the RELAY question)
+## Open items for Kyran
 
-- **Get RELAY to where a session can read it.** It's at `C:\Users\kyran\relay` on your PC (git repo; Stages 0 to 4 done, Stage 5 demo/verify/benchmark scripts in progress as of 2026-11-04). The session's request for that folder was refused automatically on 2026-11-12. Either: in the Claude desktop app click **Add folder** and pick `C:\Users\kyran\relay`; or push it to a GitHub repo (private is fine) the Claude GitHub app can see; or copy it into `08-relay/` here and push.
+- **Run RELAY's finished version on your PC once** (Stages 3 to 5 have only run in the sandbox and in CI): `git pull` in coding-portfolio, then in `08-relay`: `docker compose -f compose.yaml -f compose.demo.yaml up -d --build`, open http://127.0.0.1:8080, and `uv run python scripts/demo.py`. If the old stack from `C:\Users\kyran\relay` is still up, `docker compose down` there first (same ports).
+- **Read `08-relay/docs/interview-guide.md`.** It's the questions RELAY should let you answer in an interview, with short answers and where to point in the code.
+- Post 08 with a recording of the kill (dashboard beside a terminal running `docker compose kill worker-a`), or `08-relay/docs/img/live.png`. Draft: `08-relay/POST.md`. It ends with a "looking for roles" line; cut it if you'd rather not.
+- Your original `C:\Users\kyran\relay` folder is unchanged apart from one new file, `Claude outputs\relay-full.tgz` (the copy I took). Safe to delete that file. The portfolio's `08-relay/` is now the up-to-date RELAY; decide whether to keep or archive the old folder.
+- `08-relay/LICENSE` is MIT (from your original repo); the rest of the portfolio still has no licence (see below).
 - Post 07 with `07-mini-golf/docs/play.png` (or a short recording of the windmill and island holes). Draft: `07-mini-golf/POST.md`. Worth playing a round yourself first: the hole difficulty was tuned by me and a script, not by a person.
 - Post 06 with `06-chrome-extension/docs/popup.png` (or record the "Try it" steps). Draft: `06-chrome-extension/POST.md`. To try it: `chrome://extensions` → Developer mode → Load unpacked → `06-chrome-extension/extension`.
 - Chrome Web Store for Margin: only if you want it (one-off developer fee and your Google account). CI already builds the zip a submission needs.
@@ -84,10 +92,9 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 ## Start of next session
 
-Project 08 is **RELAY**, and it already exists: do not build it fresh. It's on Kyran's PC at `C:\Users\kyran\relay` (see open items for how it gets here). What's known from the earlier RELAY chats (https://claude.ai/chat/efebe460-dddc-4775-970a-c71160385dfd):
+The series is built: there is no next project. Useful things a future session could do, only if Kyran asks:
 
-- Python, FastAPI, two PostgreSQL databases (engine and demo CRM), separate worker processes, React/TypeScript/Vite/Tailwind ops dashboard, Docker Compose, `uv`, Alembic migrations with DB triggers enforcing state transitions.
-- Design docs in `docs/` (architecture, five ADRs, guarantees-and-limitations, implementation-status with its own handover). Claims `FOR UPDATE SKIP LOCKED`, leases with fencing tokens, recovery sweep, retries with backoff, receiver-side idempotency in the CRM, approval gate (enquiry v2), version pinning. At-least-once, not exactly-once; not production-ready.
-- Stages 0 to 4 done (191+ tests against real PostgreSQL, crash tests with SIGKILL/SIGSTOP). Stage 5 (demo, verify and benchmark scripts, CI, interview guide, LinkedIn post) was in progress.
-
-Once readable: read `docs/implementation-status.md` first, keep the design, finish Stage 5, and bring it into `08-relay/` (or link it from the root README if Kyran prefers it as its own repo: ask) to the five-part "done" bar: tests green in CI here, dashboard screenshot, README with Try it and Honest scope, POST.md. Then update this file and the root README. That completes the series; the last handover should become a short "what's in the repo" note.
+- Help record or script the demo videos, or tighten any `POST.md` before it goes out.
+- Act on feedback from posts (a bug someone finds, a question worth answering in a README).
+- The open items above that need a decision first: a repo licence, the plandrift release, Chrome Web Store, PyPI.
+- RELAY extensions listed at the end of `08-relay/docs/interview-guide.md` (authentication, operator retry, `LISTEN/NOTIFY`, parallel steps).

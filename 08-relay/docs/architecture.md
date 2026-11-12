@@ -1,7 +1,7 @@
 # RELAY architecture
 
-This is the Stage 0 design, kept up to date as the code changes. Where a
-section describes something not built yet, it says so and names the stage.
+This is the Stage 0 design, kept up to date as the code changed. Everything
+described here is built and tested.
 
 RELAY is a small workflow engine. It runs a predefined, versioned, sequential
 workflow across several worker processes, stores every step's progress in
@@ -14,7 +14,7 @@ deterministic replay model, and it is not production-ready.
 
 ```
                  ┌────────────────────┐
-   browser ────▶ │ web (Stage 4)      │
+   browser ────▶ │ web dashboard      │
                  └─────────┬──────────┘
                            │ HTTP (polling)
                  ┌─────────▼──────────┐        ┌──────────────────┐
@@ -35,7 +35,7 @@ deterministic replay model, and it is not production-ready.
 
 | Component | Owns | Never does |
 |---|---|---|
-| Control API | Workflow submission, reads, approval decisions (Stage 3) | Execute steps |
+| Control API | Workflow submission, reads, approval decisions | Execute steps |
 | Worker | Claiming, executing, completing/failing steps, lease renewal, recovery sweeps | Hold a DB transaction during step execution |
 | Engine DB | Source of truth for workflow, step, attempt, approval, event and worker state | — |
 | Demo CRM | Contacts, idempotency records, mutation log | Share a transaction with the engine |
@@ -52,9 +52,9 @@ not record it" is a real, reachable state — which is the point of the demo.
 | From | To | Trigger | Transaction |
 |---|---|---|---|
 | — | `running` | Submission | T1 |
-| `running` | `awaiting_approval` | Approval step decides a decision is needed (Stage 3) | T4a |
-| `awaiting_approval` | `running` | Approved (Stage 3) | T7 |
-| `awaiting_approval` | `rejected` | Rejected (Stage 3) | T7 |
+| `running` | `awaiting_approval` | Approval step decides a decision is needed | T4a |
+| `awaiting_approval` | `running` | Approved | T7 |
+| `awaiting_approval` | `rejected` | Rejected | T7 |
 | `running` | `succeeded` | Last step completes | T4 |
 | `running` | `failed` | A step fails definitively | T5 / T6 |
 | `running` | `outcome_unknown` | Retries exhausted on an external-effect step after an ambiguous attempt | T5 / T6 |
@@ -76,7 +76,7 @@ stateDiagram-v2
     running --> ready: retryable failure / lease expired, attempts left
     running --> failed: permanent, or exhausted
     running --> outcome_unknown: exhausted after ambiguous attempt
-    running --> awaiting_approval: approval needed (Stage 3)
+    running --> awaiting_approval: approval needed
     awaiting_approval --> succeeded: approved
     awaiting_approval --> rejected: rejected
     pending --> cancelled: workflow ended early
@@ -91,14 +91,14 @@ stateDiagram-v2
 | `running` | `ready` | Lease expired | `lease_expires_at < now()`; attempts left | T6 |
 | `running` | `failed` | Permanent failure, or attempts exhausted | Fence (T5) or expiry (T6) | T5, T6 |
 | `running` | `outcome_unknown` | Exhausted with an ambiguous attempt | as above | T5, T6 |
-| `running` | `awaiting_approval` | Approval rule fires (Stage 3) | Fence | T4a |
-| `awaiting_approval` | `succeeded` / `rejected` | Decision (Stage 3) | Approval is `pending` | T7 |
+| `running` | `awaiting_approval` | Approval rule fires | Fence | T4a |
+| `awaiting_approval` | `succeeded` / `rejected` | Decision | Approval is `pending` | T7 |
 | `pending` | `cancelled` | Workflow reached a terminal non-success state | — | T5, T6, T7 |
 
 ### 2.3 Step attempt
 
 One row per claim. `in_progress` → `succeeded` | `failed` | `lease_expired` |
-`paused_for_approval` (Stage 3). Only the owner of that attempt's lease
+`paused_for_approval`. Only the owner of that attempt's lease
 generation, or the recovery sweep after expiry, may set the outcome.
 
 In v1 `attempt_number` and `lease_generation` always move together (every
@@ -130,10 +130,11 @@ a sleep or a human while a transaction is open.
 | T2 claim | Worker | `SELECT … FOR UPDATE SKIP LOCKED` one eligible step; set `running`, owner, `lease_generation+1`, `lease_expires_at = now() + lease`, `attempt_count+1`; insert attempt row; append `step.claimed`. **Commit before executing.** |
 | — execute | Worker | No transaction. Step code runs, possibly calling the CRM over HTTP |
 | T3 renew | Worker | Fenced `UPDATE … SET lease_expires_at = now() + lease` |
+| T4a pause | Worker | Fenced update to `awaiting_approval`, releasing the lease; close attempt as `paused_for_approval`; insert the approval request with the output the step will hand on; workflow → `awaiting_approval` |
 | T4 complete | Worker | Fenced update to `succeeded` with output; close attempt; append event; **make the successor `ready` with this output as its input, or finish the workflow** |
 | T5 fail | Worker | Fenced; close attempt; schedule a retry or mark terminal, cancel pending steps, finish the workflow |
 | T6 recover | Any worker's sweep | `SKIP LOCKED` batch of expired `running` steps; close their attempts as `lease_expired`; back to `ready` or terminal |
-| T7 decide (Stage 3) | API | Record approval decision; approve → step `succeeded` + successor `ready`; reject → `rejected` + cancel + workflow `rejected` |
+| T7 decide | API | Record approval decision; approve → step `succeeded` + successor `ready`; reject → `rejected` + cancel + workflow `rejected` |
 | T8 CRM apply | CRM | Claim idempotency key, check payload hash, apply contact upsert, insert mutation row, store response — **in the CRM database** |
 
 T4 putting "step done" and "next step eligible" in one commit is what stops a
@@ -164,7 +165,22 @@ rows instead of queueing behind each other; the loser sees nothing and polls
 again. `now()` is the database clock, so worker clock skew cannot affect lease
 decisions.
 
-### 3.2 Lock ordering
+### 3.2 The approval gate (T4a, T7)
+
+A paused step holds **no lease**. That is the whole design: there is nothing to
+renew and nothing to expire, so no worker is tied up and the recovery sweep
+(which only looks at `running` steps) never touches it. A workflow can wait for
+a person across restarts of every process.
+
+The decision (T7) locks the approval row `FOR UPDATE`, so two decisions arriving
+together are serialised: the second sees the first one's result. Approve writes
+the stored output to the step, marks it `succeeded`, puts the workflow back to
+`running` and makes the successor `ready`, all in the transaction that records
+the decision — the same hand-off a worker's completion does (I6). Repeating a
+decision returns the original (`Idempotent-Replayed: true`); the opposite
+decision is a 409.
+
+### 3.3 Lock ordering
 
 Transactions lock step rows first (in position order), then the workflow row.
 Because a workflow is sequential, at most one of its steps is active at a time
@@ -209,7 +225,12 @@ held by its previous incarnation.
 | I8 | Reusing an idempotency key with a different payload is rejected | Stored request hash, HTTP 409 (API and CRM) |
 | I9 | A run's workflow version and step list never change after submission | Steps materialised in T1; handlers resolved by `(type, version, step)` |
 | I10 | No transaction is open while a step executes | Code structure: T2 commits, execution, then T4/T5 |
-| I11 | A terminal workflow has no non-terminal steps | T5/T6/T7 cancel pending steps; checked by the verifier (Stage 5) |
+| I11 | A terminal workflow has no non-terminal steps | T5/T6/T7 cancel pending steps; checked by the verifier |
+| I12 | An approval decision is final | `FOR UPDATE` on the approval row in T7; trigger `approvals_guard` rejects any change to a decided row |
+| I13 | One worker crash cannot fail a workflow | Every step's `max_attempts` is at least 2 (`StepDefinition` refuses less) |
+
+`relay/verify.py` re-checks these against the live rows of both databases (twelve
+queries; `scripts/verify.py`). It is run after the demo, after every benchmark run, and in CI.
 
 ## 6. Idempotency
 
@@ -274,7 +295,10 @@ arbitrary API without one, RELAY could not prevent a duplicate.
 | Several recovery sweeps at once | Each expired step recovered exactly once | `test_concurrent_recovery_sweeps_recover_each_step_exactly_once` |
 | Crash between step success and successor scheduling | Impossible by construction (one transaction) | `test_completion_and_successor_scheduling_are_atomic` |
 | Full restart with databases kept | In-flight work recovers via lease expiry; nothing lost or duplicated | `test_full_restart_with_work_in_flight_loses_nothing` |
-| Approval pending across a full restart | Still pending; approve later continues | Stage 3 |
+| Approval pending across a full restart | Still pending; approve later continues | `test_an_approval_survives_a_full_restart_then_continues` |
+| Stale worker tries to pause a step for approval | Refused by the fence; no approval request created | `test_a_worker_that_lost_its_lease_cannot_pause_the_workflow` |
+| Two reviewers decide at once, or one decides twice | Exactly one decision; a repeat returns it; the opposite is a 409 | `test_sixteen_decisions_at_once_produce_exactly_one` |
+| Worker dies holding any step, including `validate` | Recovered and completed by another worker | `test_a_crash_on_any_step_never_fails_a_valid_workflow` |
 
 ### 8.1 Recovery timing
 
@@ -295,13 +319,13 @@ still have to be solved in the database. At this scale — tens of workflows per
 second on a laptop — polling a well-indexed table is cheap. See
 [ADR 0001](decisions/0001-postgres-queue.md).
 
-## 10. Implementation plan
+## 10. How it was built
 
-| Stage | Delivers | Exit check |
+| Stage | Delivered | Exit check |
 |---|---|---|
 | 0 | This design, ADRs | Reviewed |
-| 1 | Repo, Compose, migrations, submission API, worker with SKIP LOCKED claims and fenced writes, enquiry workflow (extract → validate → enrich → CRM), demo CRM with key contract | Integration tests on real PostgreSQL; subprocess end-to-end run |
+| 1 | Repo, Compose, migrations, submission API, worker with SKIP LOCKED claims and fenced writes, enquiry workflow, demo CRM with key contract | Integration tests on real PostgreSQL; subprocess end-to-end run |
 | 2 | Lease renewal, recovery sweep, retries with backoff + jitter, error classification, `outcome_unknown`, CRM fault controls, failpoints, crash tests with real process death | Fault-injection suite |
-| 3 | Approval gate, version pinning test with a second definition, full read API | Approval restart test |
-| 4 | Dashboard on real API, metrics, demo panel, Playwright smoke tests | UI smoke suite |
-| 5 | Demo + verify + benchmark scripts, CI, docs, interview guide, LinkedIn draft | Reproducible demo from a clean clone |
+| 3 | Approval gate as enquiry v2, version pinning, operations API (overview, metrics, events, approvals, batches) | Approval restart test; version-pinning tests |
+| 4 | Dashboard on the real API | Playwright suite that kills a worker mid-batch |
+| 5 | Verifier, demo and benchmark scripts, CI including the Docker Compose demo, interview guide | Demo passes from a clean clone in CI |

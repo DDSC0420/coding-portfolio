@@ -42,7 +42,7 @@ class EngineSettings(BaseSettings):
     max_batch_size: int = Field(default=500, ge=1, le=5000)
     max_request_bytes: int = Field(default=256_000, ge=1_000)
 
-    # Business rule (used by the approval gate in Stage 3)
+    # Business rule: the approval gate (relay/steps/approval.py)
     approval_threshold_gbp: int = 50_000
 
 

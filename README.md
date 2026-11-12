@@ -13,7 +13,7 @@ Built with heavy AI assistance (Claude). I set the brief, review the design and 
 | 05 | [Tally: subscription SaaS starter](05-saas-starter/) | Full-stack, auth, payments | Done |
 | 06 | [Margin: highlights that stay put](06-chrome-extension/) | Browser platform, Chrome extensions | Done |
 | 07 | [Pocket Links: mini golf](07-mini-golf/) | Graphics, game loop, physics | Done |
-| 08 | RELAY workflow engine | Distributed systems | Planned |
+| 08 | [RELAY: a workflow engine you can kill mid-step](08-relay/) | Distributed systems, PostgreSQL | Done |
 
 ## What "finished" means here
 

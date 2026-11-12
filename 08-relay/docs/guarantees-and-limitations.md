@@ -1,7 +1,6 @@
 # Guarantees and limitations
 
-This describes what RELAY actually does today. Items marked **(Stage N)** are
-designed but not built yet; until then, they are not guarantees.
+This describes what RELAY actually does. Each claim below is backed by a test.
 
 ## What is durable
 
@@ -23,7 +22,7 @@ and keep polling. RELAY does not replicate or back up the database.
 A step can run more than once. A worker can finish a step's work and die
 before recording it. Steps are therefore written to be safe to re-run:
 
-- `extract`, `validate`, `enrich` are pure functions of persisted input.
+- `extract`, `validate`, `enrich` and `approval` are pure functions of persisted input.
 - `crm_upsert` relies on the CRM's idempotency contract (below).
 
 RELAY does **not** provide exactly-once execution. With the demo CRM, it
@@ -79,8 +78,10 @@ external effect.
 
 Retries wait `base * 2^(attempt-1)` seconds (capped), with equal jitter, and
 at least as long as a `Retry-After` header (capped at 120 s). Each step has
-its own attempt budget (`crm_upsert`: 6; `validate`: 1, since a validation
-failure is permanent). A worker vanishing mid-attempt counts as an attempt.
+its own attempt budget (`crm_upsert`: 6; the others: 3). A worker vanishing
+mid-attempt counts as an attempt, so no step may have a budget below 2: with a
+budget of 1, a crash at the wrong moment failed a valid workflow (this was a real
+bug, found from a dashboard screenshot and now enforced in `StepDefinition`).
 
 ## When retries are exhausted
 
@@ -105,11 +106,32 @@ healthy slow step is not taken away. If a worker loses a lease anyway, the
 step's code keeps running to the end (Python threads cannot be cancelled), but
 its result is refused by the fence.
 
-## Not yet built
+## The approval gate
 
-- **(Stage 3)** Human approval gate.
-- **(Stage 3)** A second workflow version to demonstrate version pinning end to end.
-- **(Stage 5)** A verifier script that checks invariant I11 and the CRM log after a demo.
+An enquiry worth £50,000 or more (`RELAY_APPROVAL_THRESHOLD_GBP`), or one the
+submitter flagged, pauses before the CRM step. While paused it holds no lease,
+so it survives a restart of every process and is never "recovered". Approve and
+the workflow continues with the output stored at the pause; reject and it ends
+as `rejected` without the CRM ever being called.
+
+A decision is final. Tested: 16 simultaneous decisions (half approve, half
+reject) produce exactly one; repeating a decision returns the original; the
+opposite decision is refused with 409; a direct SQL update of a decided row is
+refused by a trigger; a stale worker cannot create an approval request.
+
+## Version pinning
+
+A run keeps the workflow version it was submitted with. `enquiry` v1 (no gate)
+and v2 (with the gate) are both registered; a v1 run of a £120,000 enquiry goes
+straight to the CRM step even after v2 exists, and a worker claims only the
+versions it can execute.
+
+## Checking it afterwards
+
+`scripts/verify.py` runs twelve read-only checks against both databases (for
+example: every succeeded CRM step has exactly one write in the CRM; no finished
+workflow has an unfinished step). Its own tests corrupt the data on purpose,
+with the guard triggers switched off, to prove each check fires.
 
 ## Known limitations
 
@@ -120,7 +142,14 @@ its result is refused by the fence.
 - Workers poll; idle workers issue one cheap indexed query per slot per poll
   interval.
 - No authentication. All ports bind to `127.0.0.1`. Approval reviewer names
-  (Stage 3) will be labels, not identities.
+  are labels, not identities: anyone who can reach the API can approve.
+- A worker that loses a lease cannot interrupt the step's code; it runs to the
+  end and its result is refused.
+- `max_attempts` is fixed in the workflow definition; there is no operator
+  "retry this again" action for a `failed` or `outcome_unknown` run.
+- The dashboard polls once a second; it is not pushed updates.
+- Throughput on a 2-CPU machine did not rise beyond two workers
+  (see the README's benchmark): everything shares the same CPUs and one database.
 
 ## What public production use would need
 

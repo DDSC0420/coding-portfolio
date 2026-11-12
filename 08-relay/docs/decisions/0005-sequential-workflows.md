@@ -4,7 +4,7 @@
 
 ## Decision
 v1 supports a predefined, sequential step list per `(workflow_type, version)`,
-with a conditional approval gate (Stage 3). All step rows are materialised at
+with a conditional approval gate (enquiry v2). All step rows are materialised at
 submission, and each run is pinned to its version.
 
 ## Consequences
