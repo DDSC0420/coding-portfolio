@@ -21,7 +21,7 @@ How:
 → The CRM call carries a key fixed at the start, so a retry gets the saved answer back instead of a second write.
 → If it truly can't tell whether something happened, it says "outcome unknown" instead of guessing.
 
-229 tests. They kill and freeze real worker processes, drop replies after the save, and restart everything mid-batch. On every push, CI starts the whole thing in Docker, kills a worker with `docker compose kill`, and then checks both databases: one CRM write per job, never two.
+229 tests. They kill and freeze real worker processes, drop replies after the save, and restart everything mid-batch. On every push, CI starts the whole thing in Docker, kills a worker, and then checks both databases: one CRM write per job, never two.
 
 My favourite bug wasn't found by a test. A dashboard screenshot showed a perfectly good job marked "failed" because the worker died at the wrong moment. One setting was doing two jobs. Fixed, and there's a test for it now.
 
