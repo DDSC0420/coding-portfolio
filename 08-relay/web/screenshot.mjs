@@ -1,7 +1,7 @@
 // Make docs/img/live.png and docs/img/workflow.png from the real stack. Dev only.
 //
 //   (terminal 1)  uv run python scripts/run_local.py --fresh
-//   (terminal 2)  cd web && npm run build && npm run preview
+//   (terminal 2)  cd web && npm run build && npm run preview -- --host 127.0.0.1
 //   (terminal 3)  cd web && node screenshot.mjs
 //
 // live.png: a batch against a slow CRM that loses replies, a few seconds after worker-a was killed.
