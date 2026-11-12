@@ -13,12 +13,24 @@ sync_api = pytest.importorskip("playwright.sync_api")
 expect = sync_api.expect
 
 
+def launch_chromium(playwright):
+    """Start Chromium. If Playwright's own browser isn't downloaded yet, skip with the fix rather
+    than erroring, except on CI, where a missing browser must fail the build."""
+    try:
+        return playwright.chromium.launch(channel=os.environ.get("PLAYWRIGHT_CHANNEL") or None)
+    except sync_api.Error as exc:
+        if os.environ.get("CI") or "Executable doesn't exist" not in str(exc):
+            raise
+        pytest.skip("Playwright's browser isn't installed: run `python -m playwright install chromium`, "
+                    "or set PLAYWRIGHT_CHANNEL=chrome to use your own Chrome")
+
+
 @pytest.mark.parametrize("width", [1200, 390])
 def test_report_renders_and_tooltips_work(tmp_path, width):
     now = datetime(2026, 3, 15)
     result = run(tmp_path / "g.duckdb", tmp_path / "site", fetch=FakeApi(), now=lambda: now, say=lambda _: None)
     with sync_api.sync_playwright() as playwright:
-        browser = playwright.chromium.launch(channel=os.environ.get("PLAYWRIGHT_CHANNEL") or None)
+        browser = launch_chromium(playwright)
         page = browser.new_page(viewport={"width": width, "height": 900})
         errors = []
         page.on("pageerror", lambda exc: errors.append(str(exc)))

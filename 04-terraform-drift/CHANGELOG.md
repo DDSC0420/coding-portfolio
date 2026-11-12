@@ -2,7 +2,7 @@
 
 All notable changes to plandrift. Versions follow [semantic versioning](https://semver.org); release tags are `drift-vX.Y.Z`.
 
-## 0.1.0 (2026-11-11)
+## 0.1.0 (2026-11-12)
 
 First release.
 
@@ -15,3 +15,4 @@ First release.
 - `plandrift run` makes the plan itself (`terraform plan -refresh-only`, or `--full-plan`), with `--terraform-bin tofu` for OpenTofu.
 - A composite GitHub Action (`DDSC0420/coding-portfolio/04-terraform-drift`) that writes the report to the job summary and sets outputs.
 - No runtime dependencies. Python 3.10 to 3.13 on Linux, macOS and Windows.
+- MIT licence.

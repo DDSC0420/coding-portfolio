@@ -119,7 +119,7 @@ PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser 
 - `test_api.py`: uploads, size limits, security headers, sample names that can't be used to reach other files
 - `test_browser.py`: the page in a real browser: review flags, evidence highlighting, upload and download, CV text that tries to run script, a phone-sized screen
 
-The browser tests need a browser: `python -m playwright install chromium`. They skip themselves if Playwright isn't installed.
+The browser tests need a browser: run `python -m playwright install chromium` once. Until you do, they skip themselves and say so.
 
 ## Honest scope
 

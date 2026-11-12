@@ -20,6 +20,18 @@ sync_api = pytest.importorskip("playwright.sync_api")
 expect = sync_api.expect
 
 
+def launch_chromium(playwright):
+    """Start Chromium. If Playwright's own browser isn't downloaded yet, skip with the fix rather
+    than erroring, except on CI, where a missing browser must fail the build."""
+    try:
+        return playwright.chromium.launch(channel=os.environ.get("PLAYWRIGHT_CHANNEL") or None)
+    except sync_api.Error as exc:
+        if os.environ.get("CI") or "Executable doesn't exist" not in str(exc):
+            raise
+        pytest.skip("Playwright's browser isn't installed: run `python -m playwright install chromium`, "
+                    "or set PLAYWRIGHT_CHANNEL=chrome to use your own Chrome")
+
+
 @pytest.fixture(scope="module")
 def base_url(tmp_path_factory):
     with socket.socket() as probe:
@@ -40,7 +52,7 @@ def base_url(tmp_path_factory):
 @pytest.fixture(scope="module")
 def browser():
     with sync_api.sync_playwright() as playwright:
-        chrome = playwright.chromium.launch(channel=os.environ.get("PLAYWRIGHT_CHANNEL") or None)
+        chrome = launch_chromium(playwright)
         yield chrome
         chrome.close()
 

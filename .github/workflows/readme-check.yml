@@ -1,0 +1,125 @@
+name: readme-check
+
+# Each project's "Try it" steps, run as written, on Windows, macOS and Linux: a fresh venv or
+# npm install, the README's commands, and the page or output the README promises. Then the
+# tests that need no browser or database, on the same machines.
+
+on:
+  push:
+    branches: [main]
+    paths: ["0*/**", ".github/workflows/readme-check.yml", ".github/scripts/serve_check.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  python:
+    name: ${{ matrix.project }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        project: [01-live-incident-board, 02-uk-grid-pipeline, 03-intake, 05-saas-starter]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    env:
+      CHECK: ${{ github.workspace }}/.github/scripts/serve_check.py
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Try it, as the README says
+        run: |
+          python -m venv .venv
+          if [ -d .venv/Scripts ]; then . .venv/Scripts/activate; else . .venv/bin/activate; fi
+          pip install -q -r requirements.txt
+          case "${{ matrix.project }}" in
+            01-live-incident-board)
+              python "$CHECK" http://127.0.0.1:8000/ "<title>Live incident board" -- uvicorn app.main:app ;;
+            02-uk-grid-pipeline)
+              python -m gridwatch run --sample
+              grep -q "How clean is Great Britain" site/index.html ;;
+            03-intake)
+              python -m intake extract samples/tom-brennan.docx > record.json
+              grep -q '"Tom Brennan"' record.json
+              python -m intake eval | tee eval.txt
+              grep -q "44/44 fields correct" eval.txt
+              python "$CHECK" http://127.0.0.1:8000/ "<title>Intake" -- python -m intake serve ;;
+            05-saas-starter)
+              python "$CHECK" http://127.0.0.1:8000/ "Tally" -- python -m tally serve ;;
+          esac
+      - name: Tests that need no browser
+        run: |
+          if [ -d .venv/Scripts ]; then . .venv/Scripts/activate; else . .venv/bin/activate; fi
+          pip install -q -r requirements-dev.txt
+          pytest -q --ignore-glob="*browser*"
+
+  node:
+    name: ${{ matrix.project }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        project: [06-chrome-extension, 07-mini-golf]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    env:
+      CHECK: ${{ github.workspace }}/.github/scripts/serve_check.py
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Try it, as the README says
+        run: |
+          case "${{ matrix.project }}" in
+            06-chrome-extension)
+              # "Load unpacked" needs a person; check the folder is complete and packs cleanly.
+              npm ci
+              npm run check
+              npm run zip ;;
+            07-mini-golf)
+              npm install
+              python "$CHECK" http://localhost:5173/ "Pocket Links" -- npm run dev ;;
+          esac
+      - name: Tests that need no browser
+        run: |
+          case "${{ matrix.project }}" in
+            06-chrome-extension) npm run test:unit ;;
+            07-mini-golf) npm run typecheck && npm test && npm run build ;;
+          esac
+
+  relay:
+    name: 08-relay on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    defaults:
+      run:
+        working-directory: 08-relay
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - name: Install and run the tests that need no database
+        # The Docker Compose demo itself is run on Linux by relay.yml.
+        run: |
+          uv sync --frozen
+          uv run pytest -q tests/unit

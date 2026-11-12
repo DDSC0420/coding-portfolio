@@ -26,7 +26,7 @@ That's the picture above. The bundled examples are plan JSON from an invented AW
 plandrift check examples/drift-and-changes.json                 # drift plus pending changes, secrets masked
 plandrift check examples/drift-and-changes.json -f markdown      # the PR-comment version
 plandrift check examples/console-changes.json --ignore '*:tags_all' --ignore 'aws_instance.*'
-plandrift check examples/no-drift.json; echo $?                  # 0
+plandrift check examples/no-drift.json; echo $?                  # 0 (PowerShell: $LASTEXITCODE)
 ```
 
 `examples/real/` holds plan JSON from a real Terraform 1.17 run (committed by the end-to-end CI job below), and the tests check plandrift against it.
@@ -79,12 +79,13 @@ jobs:
   drift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: hashicorp/setup-terraform@v3
         with: { terraform_wrapper: false }
       - run: terraform init -input=false && terraform plan -refresh-only -out=plan.out && terraform show -json plan.out > plan.json
         # (plus your cloud credentials)
-      - uses: DDSC0420/coding-portfolio/04-terraform-drift@main   # or pin a release tag
+      - id: drift
+        uses: DDSC0420/coding-portfolio/04-terraform-drift@main   # or pin a release tag
         with:
           plan: plan.json
           fail-on: drift
@@ -133,7 +134,7 @@ plan.json ──► plan.py ──► diff.py ──► report.py ──► rend
 | `terraform.py` | `plandrift run`: `terraform plan -out` to a temp file, then `terraform show -json`. |
 | `cli.py` | Arguments and exit codes. argparse's own usage-error exit code is 2, which here would mean "drift found", so usage errors exit 1. |
 
-Everything except `cli.py` and `terraform.py` is pure functions with no I/O, tested directly. No runtime dependencies, so the wheel is 12 files and installs anywhere.
+Everything except `cli.py` and `terraform.py` is pure functions with no I/O, tested directly. No runtime dependencies, so the wheel is 13 files and installs anywhere.
 
 ## How it's tested
 

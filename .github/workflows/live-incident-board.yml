@@ -27,3 +27,20 @@ jobs:
       - run: ruff check .
       - run: python -m playwright install --with-deps chromium
       - run: pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: 01-live-incident-board
+    steps:
+      - uses: actions/checkout@v6
+      - name: The README's Docker command builds the image and serves the board
+        run: |
+          docker build -t incident-board .
+          docker run -d --rm -p 8000:8000 --name board incident-board
+          for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:8000/ && break; sleep 1; done
+          curl -fsSL http://localhost:8000/ | grep -q "<title>Live incident board"
+          docker logs board
+          docker stop board

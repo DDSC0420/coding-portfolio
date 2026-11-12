@@ -29,3 +29,5 @@ A project only counts when it has all five:
 
 - `NN-project-name/`: one self-contained project per folder
 - `handover/`: working notes that carry context from one build session to the next
+
+MIT licensed: see [LICENSE](LICENSE).

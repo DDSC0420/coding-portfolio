@@ -4,7 +4,7 @@
   "private": true,
   "description": "Margin: a Chrome extension for highlights that stay put. Development tooling only; the extension itself has no dependencies.",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=20"
   },

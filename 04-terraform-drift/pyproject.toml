@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -8,6 +8,8 @@ dynamic = ["version"]
 description = "Report Terraform drift (changes made outside Terraform) and pending changes from plan JSON, for CI and PR comments."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Kyran" }]
 keywords = ["terraform", "opentofu", "drift", "infrastructure-as-code", "ci"]
 classifiers = [

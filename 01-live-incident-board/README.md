@@ -80,11 +80,11 @@ PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser 
 - `test_socket.py`: the protocol over real WebSocket connections (broadcast, conflicts, late joiners, isolation between boards, rate limiting, the drill)
 - `test_browser.py`: two real browser tabs against a real server staying in sync, a cut connection reconnecting and catching up, and the injection check
 
-The browser tests need a browser: `python -m playwright install chromium`. They skip themselves if Playwright isn't installed.
+The browser tests need a browser: run `python -m playwright install chromium` once. Until you do, they skip themselves and say so.
 
 ## Honest scope
 
-- **Local only for now.** There's no hosted demo; it runs on your machine. The Dockerfile is there for when it is hosted, but hasn't been built in CI.
+- **Local only for now.** There's no hosted demo; it runs on your machine. CI builds the Docker image and checks it serves the board, but it hasn't been deployed anywhere.
 - **One process, state in memory.** Boards vanish on restart and the app can't run as several instances. Scaling out would need shared state and a pub/sub layer such as Redis.
 - **No accounts.** Anyone with a board link can edit that board. Fine for a demo, not for real incidents.
 - **Last-writer-loses, not merging.** Conflicts are detected and refused, not merged.

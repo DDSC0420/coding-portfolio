@@ -65,8 +65,9 @@ Source: the [Carbon Intensity API](https://carbonintensity.org.uk/) from the Nat
 
 ```bash
 pip install -r requirements-dev.txt
+python -m playwright install chromium   # once, for the browser tests (they skip until you do)
 pytest
-PLAYWRIGHT_CHANNEL=chrome pytest    # use your installed Chrome for the browser tests
+PLAYWRIGHT_CHANNEL=chrome pytest       # or use your installed Chrome instead
 ```
 
 60 tests, none of which touch the network:

@@ -125,6 +125,7 @@ def test_groq_request_shape():
     extractor(api).extract("CV TEXT")
     url, headers, body = api.calls[0]
     assert url == "https://api.groq.com/openai/v1/chat/completions"
+    assert body["model"] == "openai/gpt-oss-120b"  # llama-3.3-70b-versatile was retired 2026-08-16
     assert headers == {"authorization": "Bearer sk-test-secret"}
     assert body["response_format"] == {"type": "json_object"} and body["temperature"] == 0
     assert [m["role"] for m in body["messages"]] == ["system", "user"]

@@ -44,7 +44,8 @@ PROVIDERS = {
     "anthropic": Provider("anthropic", "https://api.anthropic.com/v1/messages", "ANTHROPIC_API_KEY",
                           "claude-haiku-5-5"),
     "groq": Provider("groq", "https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY",
-                     "llama-3.3-70b-versatile"),
+                     # llama-3.3-70b-versatile was retired by Groq on 2026-08-16; this is its named replacement.
+                     "openai/gpt-oss-120b"),
 }
 
 SYSTEM = """You copy facts out of CVs into JSON. You are a careful copy-typist, not a writer.
