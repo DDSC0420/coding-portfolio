@@ -60,7 +60,7 @@ def compare(result: Result, expected: dict) -> list[Check]:
 def run(samples: Path = SAMPLES, llm: LlmExtractor | None = None) -> dict[str, list[Check]]:
     out = {}
     for path in sorted((samples / "expected").glob("*.json")):
-        expected = json.loads(path.read_text())
+        expected = json.loads(path.read_text(encoding="utf-8"))
         cv = samples / expected["file"]
         result = extract(cv.read_bytes(), cv.name, llm=llm, today=date.fromisoformat(expected["as_of"]))
         out[cv.name] = compare(result, expected)

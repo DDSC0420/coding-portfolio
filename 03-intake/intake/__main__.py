@@ -46,6 +46,10 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: {exc}", file=sys.stderr)
             return 1
         exclude = None if args.text else {"text"}
+        if hasattr(sys.stdout, "reconfigure"):
+            # JSON is UTF-8. Without this, Windows writes a redirected file in its legacy code page
+            # and fails on any name outside it.
+            sys.stdout.reconfigure(encoding="utf-8")
         print(json.dumps(result.model_dump(mode="json", exclude=exclude), indent=2, ensure_ascii=False))
         return 0
 

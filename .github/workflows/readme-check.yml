@@ -13,10 +13,6 @@ on:
 permissions:
   contents: read
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   python:
     name: ${{ matrix.project }} on ${{ matrix.os }}
@@ -29,6 +25,7 @@ jobs:
         project: [01-live-incident-board, 02-uk-grid-pipeline, 03-intake, 05-saas-starter]
     defaults:
       run:
+        shell: bash  # job-level defaults replace workflow-level ones, so Windows needs this here
         working-directory: ${{ matrix.project }}
     env:
       CHECK: ${{ github.workspace }}/.github/scripts/serve_check.py
@@ -74,6 +71,7 @@ jobs:
         project: [06-chrome-extension, 07-mini-golf]
     defaults:
       run:
+        shell: bash  # job-level defaults replace workflow-level ones, so Windows needs this here
         working-directory: ${{ matrix.project }}
     env:
       CHECK: ${{ github.workspace }}/.github/scripts/serve_check.py
@@ -114,6 +112,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     defaults:
       run:
+        shell: bash
         working-directory: 08-relay
     steps:
       - uses: actions/checkout@v6

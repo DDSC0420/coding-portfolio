@@ -32,7 +32,7 @@ def migrate(conn: sqlite3.Connection) -> int:
         number = int(file.name.split("_")[0])
         if number <= version:
             continue
-        conn.executescript(f"BEGIN;\n{file.read_text()}\nPRAGMA user_version = {number};\nCOMMIT;")
+        conn.executescript(f"BEGIN;\n{file.read_text(encoding='utf-8')}\nPRAGMA user_version = {number};\nCOMMIT;")
         version = number
     return version
 
