@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-11, session 4 (projects 06 and 07 done; 08 waits on Kyran).
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 5 (06 and 07 done; 08 exists on Kyran's PC and needs bringing in).
 
 ## Goal
 
@@ -28,7 +28,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 | 05 | Tally: subscription SaaS starter | Full-stack, auth, payments | **Done.** 131 tests (52 rules, 78 app, 1 browser journey), CI green |
 | 06 | Margin: highlights that stay put (Chrome extension) | Browser platform | **Done.** 71 tests (53 unit, 18-step real-Chrome run), CI green |
 | 07 | Pocket Links: mini golf | Graphics, game loop, physics | **Done.** 58 tests (53 unit, 5 browser) + strict typecheck, CI green |
-| 08 | RELAY workflow engine, finished | Distributed systems | **NEXT, blocked on Kyran:** where does the existing RELAY code live? (plan below) |
+| 08 | RELAY workflow engine, finished | Distributed systems | **NEXT, blocked on access:** the code is on Kyran's PC at `C:\Users\kyran\relay` (Stages 0 to 4 built, Stage 5 in progress); this repo can't see it yet (plan below) |
 
 ## What exists
 
@@ -67,7 +67,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 ## Open items for Kyran (none block the next build except the RELAY question)
 
-- **Where is RELAY's code?** Project 08 is your existing workflow engine; I couldn't find a RELAY repo this session can see. Either give its repo access to the Claude GitHub app (or push it into `08-relay/` here), or say "build it fresh here" and the next session starts from the plan below.
+- **Get RELAY to where a session can read it.** It's at `C:\Users\kyran\relay` on your PC (git repo; Stages 0 to 4 done, Stage 5 demo/verify/benchmark scripts in progress as of 2026-11-04). The session's request for that folder was refused automatically on 2026-11-12. Either: in the Claude desktop app click **Add folder** and pick `C:\Users\kyran\relay`; or push it to a GitHub repo (private is fine) the Claude GitHub app can see; or copy it into `08-relay/` here and push.
 - Post 07 with `07-mini-golf/docs/play.png` (or a short recording of the windmill and island holes). Draft: `07-mini-golf/POST.md`. Worth playing a round yourself first: the hole difficulty was tuned by me and a script, not by a person.
 - Post 06 with `06-chrome-extension/docs/popup.png` (or record the "Try it" steps). Draft: `06-chrome-extension/POST.md`. To try it: `chrome://extensions` → Developer mode → Load unpacked → `06-chrome-extension/extension`.
 - Chrome Web Store for Margin: only if you want it (one-off developer fee and your Google account). CI already builds the zip a submission needs.
@@ -76,7 +76,7 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 - Post 04 with `04-terraform-drift/docs/terminal.png`. Draft: `04-terraform-drift/POST.md`. Optional second image: an e2e job's Summary page on GitHub, which shows the Markdown (PR-comment) report.
 - **Pick a licence for the repo** (none yet, so legally nobody may reuse the code). MIT is the usual choice for a portfolio; it matters most for 04 (a tool and a GitHub Action) and 06 (an extension). Add `LICENSE` at the root and `license = "MIT"` in `04-terraform-drift/pyproject.toml`; the `package.json` files in 06 and 07 say `UNLICENSED` until then.
 - PyPI for plandrift: only if you want it. Needs your PyPI account; Trusted Publishing from the release workflow would be the way. The name `plandrift` was free on 2026-11-11.
-- Chore, not urgent: GitHub warns that `actions/checkout@v4`, `actions/setup-python@v5` and `actions/setup-node@v4` target Node 20 (they still run). Bumping to the Node 24 majors across all workflows clears it.
+- Done 2026-11-12: all workflows bumped to the Node 24 action majors (checkout v6, setup-node v6, setup-python v6, upload-artifact v6, download-artifact v7). `terraform-drift-release.yml` only runs when you click it, so its bump is unproven until the first release run.
 - Record a short demo for 01 (two windows side by side, press "Run drill") and post it. Draft: `01-live-incident-board/POST.md`.
 - Post 02 with `02-uk-grid-pipeline/docs/report.png`. Draft: `02-uk-grid-pipeline/POST.md`.
 - Post 03 with `03-intake/docs/review.png`. Draft: `03-intake/POST.md`; it has an optional line mentioning the agency product, your call.
@@ -84,14 +84,10 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 ## Start of next session
 
-First, check Kyran's answer on where RELAY lives (open items). Then build project 08, **RELAY: a fault-tolerant workflow engine**, to "done", in `08-relay/`. It's the capstone: the skill on show is distributed systems. Kyran's own brief for it (from earlier chats): Python, FastAPI, PostgreSQL as the queue, separate worker processes, a small demo app driving workflows, an ops dashboard; runs free on his Windows machine with Docker Desktop/WSL2; paid AI APIs optional; no "production-ready" or "exactly-once" claims. He wants to understand the design well enough to defend it in interviews, so the README needs a clear design section (and an interview Q&A would fit).
+Project 08 is **RELAY**, and it already exists: do not build it fresh. It's on Kyran's PC at `C:\Users\kyran\relay` (see open items for how it gets here). What's known from the earlier RELAY chats (https://claude.ai/chat/efebe460-dddc-4775-970a-c71160385dfd):
 
-If his code exists: bring it in, read it before changing anything, keep his design, and finish it to the five-part "done" bar (tests in CI, screenshot, README with Try it and Honest scope, POST.md).
+- Python, FastAPI, two PostgreSQL databases (engine and demo CRM), separate worker processes, React/TypeScript/Vite/Tailwind ops dashboard, Docker Compose, `uv`, Alembic migrations with DB triggers enforcing state transitions.
+- Design docs in `docs/` (architecture, five ADRs, guarantees-and-limitations, implementation-status with its own handover). Claims `FOR UPDATE SKIP LOCKED`, leases with fencing tokens, recovery sweep, retries with backoff, receiver-side idempotency in the CRM, approval gate (enquiry v2), version pinning. At-least-once, not exactly-once; not production-ready.
+- Stages 0 to 4 done (191+ tests against real PostgreSQL, crash tests with SIGKILL/SIGSTOP). Stage 5 (demo, verify and benchmark scripts, CI, interview guide, LinkedIn post) was in progress.
 
-If it doesn't, suggested shape (confirm against his brief):
-
-- **Run:** `docker compose up` brings up Postgres, the API, two workers and the dashboard. CI runs the same compose file.
-- **Engine:** workflows as Python functions made of steps; each step's result is stored, so a re-run after a crash resumes from the last finished step. Queue in Postgres with `SELECT … FOR UPDATE SKIP LOCKED`; leases with heartbeats so a dead worker's job is picked up again; retries with exponential backoff and a dead-letter state; idempotency keys on starts; timers (`sleep` for an hour without holding a worker). Say plainly it's at-least-once with idempotent steps.
-- **Tests that prove the claims:** kill a worker mid-step (SIGKILL in a test) and show the workflow finishes once; two workers never run the same step at once (property test over many runs); a poison step ends in dead-letter after N tries; a benchmark job measuring throughput with 1, 2, 4 workers, numbers in the README.
-- **Dashboard:** running, waiting, failed, dead-lettered workflows, with each one's step history; a "replay from failed step" button. Screenshot it.
-- Then update this file and the root README. That completes the series; the last session's handover should become a short "what's in the repo" note.
+Once readable: read `docs/implementation-status.md` first, keep the design, finish Stage 5, and bring it into `08-relay/` (or link it from the root README if Kyran prefers it as its own repo: ask) to the five-part "done" bar: tests green in CI here, dashboard screenshot, README with Try it and Honest scope, POST.md. Then update this file and the root README. That completes the series; the last handover should become a short "what's in the repo" note.

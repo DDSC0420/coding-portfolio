@@ -29,8 +29,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Work out the tag, and refuse a mismatch or a repeat
@@ -83,7 +83,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         shell: bash
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: pip install from the release URL
