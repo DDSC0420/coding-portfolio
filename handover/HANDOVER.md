@@ -1,6 +1,6 @@
 # HANDOVER: "Built with Claude" LinkedIn series
 
-Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 6. **All eight projects are done and audited.** What's left: posting (see Posting status) and the open items below.
+Paste this whole file into a new chat to carry on, or say: "Read handover/HANDOVER.md in DDSC0420/coding-portfolio and carry on." Last updated: 2026-11-12, session 6. **All eight projects are done and audited.** Posts are live or scheduled (see Posting status); what's left is the open items below.
 
 ## Goal
 
@@ -75,7 +75,6 @@ Eight small, finished, working projects, each a different skill, one LinkedIn po
 
 Session 6 (2026-11-12) audited everything from a fresh clone before posting: all eight suites pass, ruff and codespell clean, no secrets, pip-audit and npm audit clean, every relative link resolves. Fixed on the way: MIT licence everywhere (root `LICENSE`, 04's `pyproject.toml` with PEP 639 metadata, 06 and 07 `package.json`); 03's Groq default model (`llama-3.3-70b-versatile` was retired on 2026-08-16, now `openai/gpt-oss-120b`); the Python browser tests now skip with the fix instead of erroring when Playwright's browser isn't downloaded (still fail on CI); 04's Action example was missing `id: drift`; 01's CI now builds the Docker image and checks it serves the board. New workflow `readme-check.yml` runs every project's "Try it" steps on Windows, macOS and Linux (21 jobs, green); Windows found PowerShell-vs-bash and code-page bugs, now fixed (intake prints UTF-8 JSON, file reads name UTF-8).
 
-- **LinkedIn posts:** see "Posting status" below.
 - **Cut the first plandrift release yourself:** GitHub → Actions → terraform-drift-release → Run workflow (branch main). Claude's side blocks creating public releases, so it can't. Check all four jobs go green; the Release `drift-v0.1.0` should have the wheel and sdist. Post 04 was written without the release line; once the release exists, the line "→ Push a version tag and CI tests, builds and publishes the release, then installs it back from the release on all three systems" is true and can go in a comment or edit.
 - **Commit authorship:** every commit in the repo is authored by "Claude", so GitHub shows Claude as the only contributor and you as none. Changing that means rewriting history and force-pushing; decide whether you want it. Going forward, commits you make yourself carry your name.
 - **Run RELAY's finished version on your PC once** (Stages 3 to 5 have only run in the sandbox and in CI): `git pull` in coding-portfolio, then in `08-relay`: `docker compose -f compose.yaml -f compose.demo.yaml up -d --build`, open http://127.0.0.1:8080, and `uv run python scripts/demo.py`. If the old stack from `C:\Users\kyran\relay` is still up, `docker compose down` there first (same ports).
@@ -88,7 +87,8 @@ Session 6 (2026-11-12) audited everything from a fresh clone before posting: all
 
 ### Posting status
 
-Posting pack (all eight posts, image paths, schedule): https://claude.ai/artifact/GHjkXJuto9jfUX1oKUE1ch. Plan agreed 2026-11-12: post 01 now, schedule 02 to 08 in LinkedIn's own scheduler on Tuesday and Thursday mornings (17, 19, 24, 26 Nov, 1, 3, 8 Dec). Post 03 without the agency line; post 08 keeps the "looking for roles" paragraph. Status: waiting on Kyran to sign in to LinkedIn in the desktop app's browser pane.
+Posting pack (all eight posts, image paths, schedule): https://claude.ai/artifact/GHjkXJuto9jfUX1oKUE1ch. Plan agreed 2026-11-12: post 01 now, schedule 02 to 08 in LinkedIn's own scheduler on Tuesday and Thursday mornings (17, 19, 24, 26 Nov, 1, 3, 8 Dec). Post 03 without the agency line; post 08 keeps the "looking for roles" paragraph. Status: **done.** Post 01 went live on 2026-11-12 (https://www.linkedin.com/feed/update/urn:li:activity:7526575407450669056/). Posts 02 to 08 are in LinkedIn's scheduler at 8:30 AM UK time: 02 Tue 17 Nov, 03 Thu 19 Nov, 04 Tue 24 Nov, 05 Thu 26 Nov, 06 Tue 1 Dec, 07 Thu 3 Dec, 08 Tue 8 Dec, each with its `docs/` image. Each post's text was checked character for character against its `POST.md` before scheduling (post 04 without the release line). LinkedIn shows the GitHub links as lnkd.in short links; that's LinkedIn, not a mistake. To change one: Start a post → clock icon → Scheduled. Reply to comments in the first hour or two after each goes out.
+- How the posting was done (for next time): the desktop app's browser pane, signed in as Kyran. Images went straight from raw.githubusercontent.com into LinkedIn's upload field (the page script hands the file to the input instead of opening a file dialog). Claude in Chrome wasn't connected that day. Never type Kyran's password; if LinkedIn signs out, ask him to sign in.
 
 ## Start of next session
 
