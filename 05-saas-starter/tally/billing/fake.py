@@ -44,7 +44,7 @@ class FakeProvider:
     def __init__(self, store: Store, now: Callable[[], int], secret: str, deliver: Deliver) -> None:
         self.store, self.now, self.secret, self.deliver = store, now, secret, deliver
 
-    # --- the four calls the app makes -----------------------------------------------------
+    # --- the five calls the app makes -----------------------------------------------------
 
     def start_checkout(self, workspace_id: int, email: str, plan: str) -> str:
         checkout_id = _id("cs_test")
@@ -65,6 +65,10 @@ class FakeProvider:
     def resume(self, subscription_id: str) -> None:
         self._update(subscription_id, cancel_at_period_end=0)
         self._emit("customer.subscription.updated", self._sub_object(subscription_id))
+
+    def retrieve_subscription(self, subscription_id: str) -> dict | None:
+        """The subscription as it is now, in Stripe's shape (GET /v1/subscriptions/:id)."""
+        return self._sub_object(subscription_id) if self._row(subscription_id) is not None else None
 
     # --- the hosted checkout page ---------------------------------------------------------
 

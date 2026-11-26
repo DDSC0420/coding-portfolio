@@ -25,9 +25,10 @@ from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import plans, security
+from .billing import ProviderError
 from .billing.fake import CARDS, CheckoutError, FakeProvider
 from .store import Store, connect, migrate
-from .subscriptions import LIVE, Subscription, apply_event
+from .subscriptions import LIVE, Subscription, apply_event, subscription_ref
 from .webhooks import EventError, SignatureError, parse_event, verify
 
 HERE = Path(__file__).resolve().parent
@@ -236,13 +237,21 @@ def create_app(config: Config) -> FastAPI:
                 if workspace_id is None or store.workspace(workspace_id) is None:
                     note = "ignored: no matching workspace"
                 else:
-                    outcome = apply_event(store.subscription(workspace_id), event)
+                    # The event is a nudge: fetch the subscription it names and store that, not the
+                    # event's copy. Fetching inside the write transaction means two deliveries handled
+                    # at once can't save their copies in the opposite order to the one they read them.
+                    ref = subscription_ref(event)
+                    current = provider(store).retrieve_subscription(ref) if ref else None
+                    outcome = apply_event(store.subscription(workspace_id), event, current)
                     if outcome.applied:
                         store.save_subscription(workspace_id, outcome.sub)
                     note = outcome.note
                 store.record_event(event["id"], event["type"], workspace_id, billing_now(store), note, raw.decode())
         except sqlite3.IntegrityError:
             return 200, "duplicate: already processed, ignored"
+        except ProviderError as exc:
+            # Nothing was recorded, so the provider's retry is processed normally.
+            return 503, f"retry: couldn't fetch the subscription from the provider ({exc})"
         return 200, note
 
     @app.post("/webhooks/billing")

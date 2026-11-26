@@ -4,7 +4,7 @@ import sqlite3
 
 from fastapi.testclient import TestClient
 
-from tally.store import connect, migrate
+from tally.store import MIGRATIONS, connect, migrate
 
 from .conftest import Browser
 
@@ -27,10 +27,25 @@ def test_pages_have_no_inline_scripts_or_styles(owner):
 
 def test_migrations_are_numbered_and_idempotent(tmp_path):
     conn = connect(tmp_path / "m.db")
-    assert migrate(conn) == 1
-    assert migrate(conn) == 1
+    assert migrate(conn) == 2
+    assert migrate(conn) == 2
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
     assert {"users", "sessions", "workspaces", "subscriptions", "webhook_events", "fake_subscriptions"} <= tables
+    conn.close()
+
+
+def test_a_database_from_before_migration_2_upgrades_in_place(tmp_path):
+    conn = connect(tmp_path / "old.db")
+    first = sorted(MIGRATIONS.glob("001_*.sql"))[0].read_text(encoding="utf-8")
+    conn.executescript(f"BEGIN;\n{first}\nPRAGMA user_version = 1;\nCOMMIT;")
+    conn.execute("INSERT INTO users (id, email, password_hash, created_at) VALUES (1, 'a@example.com', 'x', 0)")
+    conn.execute("INSERT INTO workspaces (id, name, owner_id, created_at) VALUES (1, 'A', 1, 0)")
+    conn.execute("INSERT INTO subscriptions (workspace_id, plan, status, subscription_id, last_event_at) "
+                 "VALUES (1, 'pro', 'active', 'sub_1', 1800000000)")  # fmt: skip
+    assert migrate(conn) == 2
+    row = conn.execute("SELECT * FROM subscriptions").fetchone()
+    assert (row["plan"], row["status"], row["subscription_id"]) == ("pro", "active", "sub_1")
+    assert "last_event_at" not in row.keys()
     conn.close()
 
 

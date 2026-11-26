@@ -5,7 +5,7 @@ import json
 import pytest
 
 from tally import plans, security, webhooks
-from tally.subscriptions import Subscription, apply_event
+from tally.subscriptions import Subscription, apply_event, subscription_ref
 
 # --- passwords and tokens ----------------------------------------------------------------
 
@@ -181,6 +181,9 @@ def test_parse_event_rejects_malformed(body):
 
 
 # --- subscription state machine ----------------------------------------------------------
+#
+# Each event is a nudge: the app fetches the subscription it names from the provider and stores
+# that. `provider` below stands in for the provider's records (subscription id -> its copy now).
 
 
 def event(kind, created, **obj):
@@ -198,101 +201,148 @@ def sub_obj(status="active", plan="pro", period_end=2000, cancel=False, sid="sub
     }
 
 
-def run(*events, start=None):
+def run(*events, provider, start=None):
+    """Apply events in the order given, fetching from `provider` as the webhook handler does."""
     sub, notes = start or Subscription(), []
     for e in events:
-        out = apply_event(sub, e)
+        ref = subscription_ref(e)
+        out = apply_event(sub, e, provider.get(ref) if ref else None)
         sub, notes = out.sub, [*notes, out.note]
     return sub, notes
 
 
 def test_checkout_then_subscription_created():
-    sub, _ = run(
+    sub, notes = run(
         event("checkout.session.completed", 100, customer="cus_1", subscription="sub_1"),
         event("customer.subscription.created", 100, **sub_obj()),
+        provider={"sub_1": sub_obj()},
     )
     assert (sub.plan, sub.status, sub.subscription_id, sub.current_period_end) == ("pro", "active", "sub_1", 2000)
+    assert notes == ["synced: active", "synced: active, no change"]
 
 
 def test_failed_payment_then_recovery():
-    sub, _ = run(
-        event("customer.subscription.created", 100, **sub_obj()),
-        event("invoice.payment_failed", 200, subscription="sub_1"),
-    )
+    provider = {"sub_1": sub_obj()}
+    sub, _ = run(event("customer.subscription.created", 100, **sub_obj()), provider=provider)
+    provider["sub_1"] = sub_obj(status="past_due")
+    sub, _ = run(event("invoice.payment_failed", 200, subscription="sub_1"), provider=provider, start=sub)
     assert sub.status == "past_due" and plans.effective_plan(sub.plan, sub.status).key == "pro"
-    sub, _ = run(event("invoice.paid", 300, subscription="sub_1", period_end=4000), start=sub)
+    provider["sub_1"] = sub_obj(period_end=4000)
+    sub, _ = run(event("invoice.paid", 300, subscription="sub_1"), provider=provider, start=sub)
     assert sub.status == "active" and sub.current_period_end == 4000
 
 
 def test_cancel_at_period_end_resume_and_end():
-    sub, _ = run(
-        event("customer.subscription.created", 100, **sub_obj()),
-        event("customer.subscription.updated", 200, **sub_obj(cancel=True)),
-    )
+    provider = {"sub_1": sub_obj(cancel=True)}
+    sub, _ = run(event("customer.subscription.updated", 200, **sub_obj(cancel=True)), provider=provider)
     assert sub.cancel_at_period_end and sub.status == "active"  # still paid up until the period ends
-    sub, _ = run(event("customer.subscription.updated", 300, **sub_obj(cancel=False)), start=sub)
+    provider["sub_1"] = sub_obj(cancel=False)
+    sub, _ = run(event("customer.subscription.updated", 300, **sub_obj()), provider=provider, start=sub)
     assert not sub.cancel_at_period_end
-    sub, _ = run(event("customer.subscription.deleted", 400, **sub_obj(status="canceled")), start=sub)
-    assert (sub.plan, sub.status) == ("free", "canceled")
+    provider["sub_1"] = sub_obj(status="canceled", cancel=True)
+    ended = event("customer.subscription.deleted", 400, **sub_obj(status="canceled"))
+    sub, _ = run(ended, provider=provider, start=sub)
+    assert (sub.plan, sub.status, sub.cancel_at_period_end) == ("free", "canceled", False)
 
 
 def test_plan_change():
-    sub, _ = run(
-        event("customer.subscription.created", 100, **sub_obj(plan="pro")),
-        event("customer.subscription.updated", 200, **sub_obj(plan="team")),
-    )
+    changed = event("customer.subscription.updated", 200, **sub_obj(plan="team"))
+    sub, _ = run(changed, provider={"sub_1": sub_obj(plan="team")})
     assert sub.plan == "team"
 
 
-def test_out_of_order_event_is_ignored():
+def test_the_events_own_copy_is_not_stored():
+    # The event says active; by the time it's handled the provider says past due. The provider wins.
+    stale = event("customer.subscription.updated", 100, **sub_obj())
+    sub, notes = run(stale, provider={"sub_1": sub_obj(status="past_due")})
+    assert sub.status == "past_due" and notes == ["synced: past_due"]
+
+
+@pytest.mark.parametrize("reverse", [False, True], ids=["in order", "reversed"])
+def test_events_in_the_same_second_end_in_the_providers_state_whatever_order_they_land(reverse):
+    # Stripe's `created` is whole seconds, so a plan change and a cancel can carry the same time.
+    # Ordering by timestamp can't tell which was last; a cancelled subscription must stay cancelled.
+    provider = {"sub_1": sub_obj(status="canceled", plan="team")}
+    both = [
+        event("customer.subscription.updated", 500, **sub_obj(plan="team")),
+        event("customer.subscription.deleted", 500, **sub_obj(status="canceled", plan="team")),
+    ]
+    start, _ = run(event("customer.subscription.created", 100, **sub_obj()), provider={"sub_1": sub_obj()})
+    sub, _ = run(*(both[::-1] if reverse else both), provider=provider, start=start)
+    assert (sub.plan, sub.status) == ("free", "canceled")
+
+
+def test_a_late_event_cannot_undo_newer_state():
+    provider = {"sub_1": sub_obj(cancel=True)}
     sub, notes = run(
-        event("customer.subscription.created", 100, **sub_obj()),
         event("customer.subscription.updated", 300, **sub_obj(cancel=True)),
         event("customer.subscription.updated", 200, **sub_obj(cancel=False)),  # delivered late
+        provider=provider,
     )
-    assert sub.cancel_at_period_end and notes[-1] == "ignored: older than the last event applied"
+    assert sub.cancel_at_period_end and notes[-1] == "synced: active, no change"
 
 
 def test_events_for_another_subscription_are_ignored():
+    provider = {"sub_1": sub_obj(), "sub_OTHER": sub_obj(sid="sub_OTHER", status="past_due")}
     sub, notes = run(
         event("customer.subscription.created", 100, **sub_obj(sid="sub_1")),
         event("customer.subscription.deleted", 200, **sub_obj(sid="sub_OTHER")),
         event("invoice.payment_failed", 300, subscription="sub_OTHER"),
+        provider=provider,
     )
-    assert sub.status == "active"
-    assert notes[1:] == ["ignored: a different subscription", "ignored: invoice for a different subscription"]
+    assert sub.status == "active" and sub.subscription_id == "sub_1"
+    assert notes[1:] == ["ignored: a different subscription", "ignored: a different subscription"]
 
 
-def test_unknown_types_and_prices_are_ignored():
+def test_unknown_types_prices_and_subscriptions_are_ignored():
     sub, notes = run(
         event("customer.created", 100, id="cus_1"),
         event("customer.subscription.created", 100, **sub_obj(plan="mystery")),
+        event("invoice.paid", 100, subscription=None),
+        event("customer.subscription.updated", 100, **sub_obj(sid="sub_gone")),
+        provider={"sub_1": sub_obj(plan="mystery")},
     )
-    assert sub == Subscription() and notes == ["ignored: customer.created isn't used", "ignored: unknown price"]
+    assert sub == Subscription()
+    assert notes == [
+        "ignored: customer.created isn't used",
+        "ignored: unknown price",
+        "ignored: the event names no subscription",
+        "ignored: the provider has no such subscription",
+    ]
 
 
 def test_payment_failure_after_cancellation_does_nothing():
+    provider = {"sub_1": sub_obj()}
+    sub, _ = run(event("customer.subscription.created", 100, **sub_obj()), provider=provider)
+    provider["sub_1"] = sub_obj(status="canceled")
     sub, notes = run(
-        event("customer.subscription.created", 100, **sub_obj()),
         event("customer.subscription.deleted", 200, **sub_obj(status="canceled")),
         event("invoice.payment_failed", 300, subscription="sub_1"),
+        provider=provider,
+        start=sub,
     )
-    assert sub.status == "canceled" and notes[-1] == "ignored: payment failed while canceled"
+    assert sub.status == "canceled" and notes[-1] == "synced: canceled, no change"
 
 
 def test_resubscribe_after_cancel_with_a_new_subscription():
-    sub, _ = run(
-        event("customer.subscription.created", 100, **sub_obj(sid="sub_1")),
-        event("customer.subscription.deleted", 200, **sub_obj(sid="sub_1", status="canceled")),
+    provider = {"sub_1": sub_obj(sid="sub_1", status="canceled"), "sub_2": sub_obj(sid="sub_2", plan="team")}
+    start = Subscription(plan="free", status="canceled", customer_id="cus_1", subscription_id="sub_1")
+    sub, notes = run(
+        event("customer.subscription.created", 300, **sub_obj(sid="sub_2", plan="team")),  # before checkout, so unknown
         event("checkout.session.completed", 300, customer="cus_1", subscription="sub_2"),
-        event("customer.subscription.created", 300, **sub_obj(sid="sub_2", plan="team")),
+        event("customer.subscription.deleted", 200, **sub_obj(sid="sub_1", status="canceled")),  # the old one, late
+        provider=provider,
+        start=start,
     )
     assert (sub.subscription_id, sub.plan, sub.status) == ("sub_2", "team", "active")
+    assert notes == ["ignored: a different subscription", "synced: active", "ignored: a different subscription"]
 
 
 def test_second_checkout_while_subscribed_is_ignored():
+    provider = {"sub_1": sub_obj(sid="sub_1"), "sub_2": sub_obj(sid="sub_2", plan="team")}
     sub, notes = run(
         event("customer.subscription.created", 100, **sub_obj(sid="sub_1")),
         event("checkout.session.completed", 200, customer="cus_1", subscription="sub_2"),
+        provider=provider,
     )
     assert sub.subscription_id == "sub_1" and notes[-1] == "ignored: already subscribed"

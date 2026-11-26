@@ -34,9 +34,9 @@ def test_checkout_records_the_webhooks_it_received(owner, db):
     owner.upgrade("pro")
     events = [(r["type"], r["outcome"]) for r in db.execute("SELECT type, outcome FROM webhook_events ORDER BY rowid")]
     assert events == [
-        ("checkout.session.completed", "checkout completed"),
-        ("customer.subscription.created", "subscription active"),
-        ("invoice.paid", "invoice paid"),
+        ("checkout.session.completed", "synced: active"),  # each event fetches the subscription
+        ("customer.subscription.created", "synced: active, no change"),
+        ("invoice.paid", "synced: active, no change"),
     ]
 
 
@@ -182,9 +182,10 @@ def sub_obj(sid="sub_ext", status="active", plan="pro", workspace="1", period_en
             "items": {"data": [{"price": {"lookup_key": plan}}]}}  # fmt: skip
 
 
-def test_webhook_applies_a_signed_event(owner, send_event):
+def test_webhook_applies_a_signed_event(owner, send_event, provider_has):
+    provider_has(sub_obj())
     r = send_event("customer.subscription.created", sub_obj())
-    assert (r.status_code, r.text) == (200, "subscription active")
+    assert (r.status_code, r.text) == (200, "synced: active")
     assert owner.status() == ("active", "Pro")
 
 
@@ -221,18 +222,54 @@ def test_webhook_rejects_malformed_events(owner, send_event):
     assert send_event("x", {}, body=b"[1, 2]").status_code == 400
 
 
-def test_webhook_duplicate_event_id_is_applied_once(owner, send_event, db):
-    assert send_event("customer.subscription.created", sub_obj(), event_id="evt_same").text == "subscription active"
+def test_webhook_duplicate_event_id_is_applied_once(owner, send_event, provider_has, db):
+    provider_has(sub_obj())
+    assert send_event("customer.subscription.created", sub_obj(), event_id="evt_same").text == "synced: active"
     r = send_event("customer.subscription.deleted", sub_obj(status="canceled"), event_id="evt_same")
     assert (r.status_code, r.text) == (200, "duplicate: already processed, ignored")
     assert owner.status() == ("active", "Pro")
     assert db.execute("SELECT COUNT(*) FROM webhook_events").fetchone()[0] == 1
 
 
-def test_webhook_out_of_order_event_is_ignored(owner, send_event, clock):
+def test_webhook_a_late_event_cannot_undo_newer_state(owner, send_event, provider_has, clock):
+    provider_has(sub_obj())
     send_event("customer.subscription.created", sub_obj(), created=clock() + 100)
-    r = send_event("customer.subscription.updated", sub_obj(status="past_due"), created=clock() + 50)
-    assert r.text == "ignored: older than the last event applied"
+    r = send_event("customer.subscription.updated", sub_obj(status="past_due"), created=clock() + 50)  # stale copy
+    assert r.text == "synced: active, no change"
+    assert owner.status() == ("active", "Pro")
+
+
+@pytest.mark.parametrize("reverse", [False, True], ids=["in order", "reversed"])
+def test_webhook_same_second_events_end_in_the_providers_state(owner, send_event, provider_has, clock, reverse):
+    # A plan change then a cancel, both stamped with the same second (Stripe's `created` is whole
+    # seconds). Delivered in either order, a cancelled subscription must not come back to life.
+    provider_has(sub_obj())
+    send_event("customer.subscription.created", sub_obj())
+    provider_has(sub_obj(status="canceled", plan="team"))
+    same_second = clock() + 60
+    both = [("customer.subscription.updated", sub_obj(plan="team")),
+            ("customer.subscription.deleted", sub_obj(status="canceled", plan="team"))]  # fmt: skip
+    for kind, obj in both[::-1] if reverse else both:
+        assert send_event(kind, obj, created=same_second).status_code == 200
+    assert owner.status() == ("canceled", "Free")
+
+
+def test_webhook_asks_for_a_retry_when_the_provider_cant_be_reached(owner, send_event, provider_has, db, monkeypatch):
+    from tally.billing import ProviderError
+    from tally.billing.fake import FakeProvider
+
+    def unreachable(self, subscription_id):
+        raise ProviderError("connection timed out")
+
+    provider_has(sub_obj())
+    with monkeypatch.context() as m:
+        m.setattr(FakeProvider, "retrieve_subscription", unreachable)
+        r = send_event("customer.subscription.created", sub_obj(), event_id="evt_retry")
+    assert r.status_code == 503 and r.text.startswith("retry:")
+    assert owner.status() == ("free", "Free")
+    assert db.execute("SELECT COUNT(*) FROM webhook_events").fetchone()[0] == 0  # not marked as seen
+    r = send_event("customer.subscription.created", sub_obj(), event_id="evt_retry")  # the provider's retry
+    assert (r.status_code, r.text) == (200, "synced: active")
     assert owner.status() == ("active", "Pro")
 
 
@@ -245,10 +282,12 @@ def test_webhook_unknown_type_and_unknown_workspace_are_acknowledged(owner, send
     assert (r.status_code, r.text) == (200, "ignored: charge.refunded isn't used")
 
 
-def test_webhook_invoice_is_matched_by_subscription_id(owner, send_event):
+def test_webhook_invoice_is_matched_by_subscription_id(owner, send_event, provider_has):
+    provider_has(sub_obj(sid="sub_ext"))
     send_event("customer.subscription.created", sub_obj(sid="sub_ext"))
+    provider_has(sub_obj(sid="sub_ext", status="past_due"))
     r = send_event("invoice.payment_failed", {"id": "in_1", "object": "invoice", "subscription": "sub_ext"})
-    assert r.text == "payment failed" and owner.status() == ("past_due", "Pro")
+    assert r.text == "synced: past_due" and owner.status() == ("past_due", "Pro")
 
 
 @pytest.mark.parametrize("path", ["/dev/renew", "/dev/replay"])
