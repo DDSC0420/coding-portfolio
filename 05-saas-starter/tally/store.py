@@ -281,15 +281,14 @@ class Store:
             subscription_id=row["subscription_id"],
             current_period_end=row["current_period_end"],
             cancel_at_period_end=bool(row["cancel_at_period_end"]),
-            last_event_at=row["last_event_at"],
         )
 
     def save_subscription(self, workspace_id: int, sub: Subscription) -> None:
         self.conn.execute(
             "UPDATE subscriptions SET plan = ?, status = ?, customer_id = ?, subscription_id = ?, "
-            "current_period_end = ?, cancel_at_period_end = ?, last_event_at = ? WHERE workspace_id = ?",
+            "current_period_end = ?, cancel_at_period_end = ? WHERE workspace_id = ?",
             (sub.plan, sub.status, sub.customer_id, sub.subscription_id, sub.current_period_end,
-             int(sub.cancel_at_period_end), sub.last_event_at, workspace_id),
+             int(sub.cancel_at_period_end), workspace_id),
         )  # fmt: skip
 
     def workspace_for_billing(self, subscription_id: str | None, customer_id: str | None) -> int | None:

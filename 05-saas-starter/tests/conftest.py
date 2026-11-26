@@ -124,3 +124,23 @@ def send_event(app, clock):
         return client.post("/webhooks/billing", content=raw, headers={"Stripe-Signature": sig})
 
     return send
+
+
+@pytest.fixture
+def provider_has(app, db):
+    """Set a subscription in the test provider's own records, as a real provider would hold it.
+    The webhook handler fetches from there, so this is what an event's nudge will find."""
+
+    def put(obj):
+        db.execute(
+            "INSERT INTO fake_subscriptions (id, customer_id, workspace_id, plan, status, current_period_end, "
+            "cancel_at_period_end, card) VALUES (?, ?, ?, ?, ?, ?, ?, 'ok') ON CONFLICT(id) DO UPDATE SET "
+            "plan = excluded.plan, status = excluded.status, current_period_end = excluded.current_period_end, "
+            "cancel_at_period_end = excluded.cancel_at_period_end",
+            (obj["id"], obj["customer"], int(obj["metadata"]["workspace_id"]),
+             obj["items"]["data"][0]["price"]["lookup_key"], obj["status"], obj["current_period_end"],
+             int(obj["cancel_at_period_end"])),
+        )  # fmt: skip
+        db.commit()
+
+    return put
